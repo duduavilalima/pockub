@@ -27,6 +27,7 @@ Junho/2026
 | [STACK.md](STACK.md) | Stack tecnológica completa |
 | [RULES.md](RULES.md) | Requisitos funcionais e contrato de API |
 | [MODEL.md](MODEL.md) | Modelo de dados (PostgreSQL e MongoDB) |
+| [tdd/](tdd/README.md) | Technical Design Documents |
 | [adr/](adr/) | Architecture Decision Records |
 | [stories/](stories/) | Estórias de usuário |
 
