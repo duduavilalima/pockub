@@ -1,0 +1,24 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Build
+target/
+*.jar
+*.war
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+*.env.local
+
+# Kubernetes secrets gerados localmente
+k8s/secrets/*.yaml
+!k8s/secrets/.gitkeep
