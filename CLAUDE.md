@@ -205,6 +205,28 @@ helm install learning-lab helm/kubernetes-learning-lab/ -n learning-lab
 
 ---
 
+## Regras de Workflow
+
+### Explicação pós-implementação de TDD
+
+Após implementar qualquer TDD (ex: `TDD-001-product-api.md`), gere obrigatoriamente um arquivo de explicação com o sufixo `_explain` no mesmo diretório:
+
+```
+docs/tdd/TDD-001-product-api_explain.md
+```
+
+**Conteúdo obrigatório do arquivo `_explain`:**
+
+1. **O que foi implementado** — resumo dos artefatos criados ou modificados (arquivos, classes, manifests)
+2. **Por que cada decisão foi tomada** — justificativa técnica de cada escolha de implementação
+3. **Alternativas descartadas** — o que foi considerado e por que não foi adotado
+4. **Pontos de atenção** — armadilhas, comportamentos não óbvios, dependências de ordem ou configuração
+5. **Como validar** — comandos ou passos para verificar que a implementação está correta
+
+**Objetivo:** este é um projeto de estudo. O arquivo `_explain` serve como material de aprendizado — deve ser escrito como se o leitor estivesse vendo o componente pela primeira vez.
+
+---
+
 ## Observabilidade
 
 - `GET /actuator/health` — liveness e readiness
