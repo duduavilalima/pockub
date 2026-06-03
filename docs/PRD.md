@@ -1277,3 +1277,33 @@ Objetivos:
 Entregáveis:
 
 * Plataforma validada sob condições adversas, simulando operação em ambiente corporativo moderno.
+
+---
+
+## Fase 14 — Terraform *(opcional — pós-POC)*
+
+> Esta fase está fora do escopo da POC. Serve como referência para evolução após a conclusão das fases 1–13, aplicando os conhecimentos de Kubernetes em infraestrutura cloud real.
+
+Contexto:
+
+As fases anteriores usam Minikube local, sem necessidade de provisionar infraestrutura. O Terraform entra quando o objetivo é criar o cluster Kubernetes em um provedor cloud (AWS, GCP, Azure) de forma reproduzível e versionada.
+
+Objetivos de referência:
+
+* Provisionar um cluster Kubernetes gerenciado (EKS, GKE ou AKS) via Terraform
+* Gerenciar node groups, VPC, subnets e IAM/RBAC com código
+* Instalar a plataforma no cluster cloud via Helm (reaproveitando o Chart da Fase 12)
+* Comparar o comportamento do cluster cloud com o Minikube local
+
+Diferença em relação às fases anteriores:
+
+| Escopo | Ferramenta |
+|--------|-----------|
+| Workloads dentro do cluster | `kubectl` + Helm (Fases 1–13) |
+| Infraestrutura que hospeda o cluster | Terraform (Fase 14) |
+
+Referências para estudo posterior:
+
+* [Terraform AWS EKS Module](https://registry.terraform.io/modules/terraform-aws-modules/eks/aws)
+* [Terraform Google GKE Module](https://registry.terraform.io/modules/terraform-google-modules/kubernetes-engine/google)
+* [Terraform AzureRM AKS](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster)

@@ -14,17 +14,17 @@ Documentação completa: [`docs/PRD.md`](docs/PRD.md)
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Linguagem | Java 21 |
-| Framework | Spring Boot 4 |
-| Banco relacional | PostgreSQL 17 |
-| Banco NoSQL | MongoDB |
-| Build | Maven |
-| Container | Docker |
-| Orquestração | Kubernetes / Minikube |
-| Empacotamento K8s | Helm |
-| Observabilidade | Prometheus + Grafana |
+| Camada            | Tecnologia            |
+|-------------------|-----------------------|
+| Linguagem         | Java 21               |
+| Framework         | Spring Boot 4         |
+| Banco relacional  | PostgreSQL 17         |
+| Banco NoSQL       | MongoDB               |
+| Build             | Maven                 |
+| Container         | Docker                |
+| Orquestração      | Kubernetes / Minikube |
+| Empacotamento K8s | Helm                  |
+| Observabilidade   | Prometheus + Grafana  |
 
 Detalhes: [`docs/STACK.md`](docs/STACK.md)
 
@@ -77,24 +77,24 @@ pockub/
 
 ## Namespaces Kubernetes
 
-| Namespace | Conteúdo |
-|-----------|----------|
+| Namespace      | Conteúdo                                                  |
+|----------------|-----------------------------------------------------------|
 | `learning-lab` | Product API, PostgreSQL, MongoDB, DaemonSet, Job, CronJob |
-| `monitoring` | Prometheus, Grafana |
+| `monitoring`   | Prometheus, Grafana                                       |
 
 ---
 
 ## API — Endpoints
 
-| Método | Endpoint | Descrição | Status |
-|--------|----------|-----------|--------|
-| POST | /produtos | Criar produto | 201 / 400 |
-| PUT | /produtos/{id} | Atualizar produto | 200 / 400 / 404 |
-| DELETE | /produtos/{id} | Excluir produto | 204 / 404 |
-| GET | /produtos/{id} | Consultar produto + gera log | 200 / 404 |
-| GET | /produtos | Listar produtos + gera log | 200 |
-| GET | /logs | Listar logs de acesso | 200 |
-| GET | /logs?produtoId={id} | Filtrar logs por produto | 200 |
+| Método | Endpoint             | Descrição                    | Status          |
+|--------|----------------------|------------------------------|-----------------|
+| POST   | /produtos            | Criar produto                | 201 / 400       |
+| PUT    | /produtos/{id}       | Atualizar produto            | 200 / 400 / 404 |
+| DELETE | /produtos/{id}       | Excluir produto              | 204 / 404       |
+| GET    | /produtos/{id}       | Consultar produto + gera log | 200 / 404       |
+| GET    | /produtos            | Listar produtos + gera log   | 200             |
+| GET    | /logs                | Listar logs de acesso        | 200             |
+| GET    | /logs?produtoId={id} | Filtrar logs por produto     | 200             |
 
 Detalhes e exemplos: [`docs/RULES.md`](docs/RULES.md)
 
@@ -113,60 +113,61 @@ Detalhes, constraints e mapeamento Java: [`docs/MODEL.md`](docs/MODEL.md)
 
 ## Decisões de Arquitetura (ADRs)
 
-| ADR | Decisão |
-|-----|---------|
-| [ADR-001](docs/adr/ADR-001-minikube-local-cluster.md) | Minikube como cluster local |
-| [ADR-002](docs/adr/ADR-002-java-spring-boot.md) | Java 21 e Spring Boot 4 |
-| [ADR-003](docs/adr/ADR-003-postgresql-relacional.md) | PostgreSQL para persistência relacional |
-| [ADR-004](docs/adr/ADR-004-mongodb-nosql.md) | MongoDB para logs de acesso |
-| [ADR-005](docs/adr/ADR-005-dual-namespace.md) | Dois namespaces: `learning-lab` e `monitoring` |
-| [ADR-006](docs/adr/ADR-006-statefulset-databases.md) | StatefulSet para bancos de dados |
-| [ADR-007](docs/adr/ADR-007-prometheus-grafana.md) | Prometheus e Grafana para observabilidade |
+| ADR                                                   | Decisão                                        |
+|-------------------------------------------------------|------------------------------------------------|
+| [ADR-001](docs/adr/ADR-001-minikube-local-cluster.md) | Minikube como cluster local                    |
+| [ADR-002](docs/adr/ADR-002-java-spring-boot.md)       | Java 21 e Spring Boot 4                        |
+| [ADR-003](docs/adr/ADR-003-postgresql-relacional.md)  | PostgreSQL para persistência relacional        |
+| [ADR-004](docs/adr/ADR-004-mongodb-nosql.md)          | MongoDB para logs de acesso                    |
+| [ADR-005](docs/adr/ADR-005-dual-namespace.md)         | Dois namespaces: `learning-lab` e `monitoring` |
+| [ADR-006](docs/adr/ADR-006-statefulset-databases.md)  | StatefulSet para bancos de dados               |
+| [ADR-007](docs/adr/ADR-007-prometheus-grafana.md)     | Prometheus e Grafana para observabilidade      |
 
 ---
 
 ## Componentes Kubernetes Demonstrados
 
-| Componente | Aplicado em |
-|-----------|------------|
-| Deployment | Product API |
-| StatefulSet | PostgreSQL, MongoDB |
-| DaemonSet | Log Collector |
-| Job | Seed de dados (PostgreSQL) |
-| CronJob | Limpeza de logs antigos (MongoDB) |
-| Service ClusterIP | Comunicação interna API → bancos |
-| Service NodePort | Exposição externa da API (pré-Ingress) |
-| Ingress | Entrada única com roteamento HTTP |
-| ConfigMap | URLs, configurações, feature flags |
-| Secret | Credenciais dos bancos |
-| PV + PVC | Persistência de PostgreSQL e MongoDB |
-| HPA | Escalabilidade automática da API |
-| Liveness Probe | `/actuator/health/liveness` |
-| Readiness Probe | `/actuator/health/readiness` |
-| Startup Probe | Tolerância ao startup lento da JVM |
+| Componente               | Aplicado em                                |
+|--------------------------|--------------------------------------------|
+| Deployment               | Product API                                |
+| StatefulSet              | PostgreSQL, MongoDB                        |
+| DaemonSet                | Log Collector                              |
+| Job                      | Seed de dados (PostgreSQL)                 |
+| CronJob                  | Limpeza de logs antigos (MongoDB)          |
+| Service ClusterIP        | Comunicação interna API → bancos           |
+| Service NodePort         | Exposição externa da API (pré-Ingress)     |
+| Ingress                  | Entrada única com roteamento HTTP          |
+| ConfigMap                | URLs, configurações, feature flags         |
+| Secret                   | Credenciais dos bancos                     |
+| PV + PVC                 | Persistência de PostgreSQL e MongoDB       |
+| HPA                      | Escalabilidade automática da API           |
+| Liveness Probe           | `/actuator/health/liveness`                |
+| Readiness Probe          | `/actuator/health/readiness`               |
+| Startup Probe            | Tolerância ao startup lento da JVM         |
 | Resource Requests/Limits | Todos os containers — pré-requisito do HPA |
-| NetworkPolicy | Isolamento de PostgreSQL e MongoDB |
-| Helm Chart | Empacotamento completo da plataforma |
+| NetworkPolicy            | Isolamento de PostgreSQL e MongoDB         |
+| Helm Chart               | Empacotamento completo da plataforma       |
 
 ---
 
 ## Roadmap de Fases
 
-| Fase | Objetivo | Entregável |
-|------|----------|-----------|
-| 1 | Fundamentos K8s | Minikube + kubectl operacionais |
-| 2 | Aplicação | Imagem Docker da Product API |
-| 3 | Deploy | API no K8s via Deployment + Service |
-| 4 | Persistência | PostgreSQL e MongoDB como StatefulSets |
-| 5 | Configuração | ConfigMaps e Secrets |
-| 6 | Confiabilidade | Probes + Resource Requests/Limits |
-| 7 | Escalabilidade | HPA + Metrics Server |
-| 8 | Exposição externa | Ingress Controller |
-| 9 | Operação | Job, CronJob, DaemonSet, kubectl logs/top |
-| 10 | Observabilidade | Prometheus + Grafana |
-| 11 | Segurança de rede | NetworkPolicy |
-| 12 | Helm | Chart completo da plataforma |
-| 13 | Simulação de incidentes | Falhas, rollbacks, troubleshooting |
+| Fase | Objetivo                | Entregável                                |
+|------|-------------------------|-------------------------------------------|
+| 1    | Fundamentos K8s         | Minikube + kubectl operacionais           |
+| 2    | Aplicação               | Imagem Docker da Product API              |
+| 3    | Deploy                  | API no K8s via Deployment + Service       |
+| 4    | Persistência            | PostgreSQL e MongoDB como StatefulSets    |
+| 5    | Configuração            | ConfigMaps e Secrets                      |
+| 6    | Confiabilidade          | Probes + Resource Requests/Limits         |
+| 7    | Escalabilidade          | HPA + Metrics Server                      |
+| 8    | Exposição externa       | Ingress Controller                        |
+| 9    | Operação                | Job, CronJob, DaemonSet, kubectl logs/top |
+| 10   | Observabilidade         | Prometheus + Grafana                      |
+| 11   | Segurança de rede       | NetworkPolicy                             |
+| 12   | Helm                    | Chart completo da plataforma              |
+| 13   | Simulação de incidentes | Falhas, rollbacks, troubleshooting        |
+| 14 *(opcional)* | Terraform (pós-POC) | Provisionar cluster EKS/GKE/AKS em cloud |
 
 ---
 
