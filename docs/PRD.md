@@ -22,39 +22,39 @@ Junho/2026
 
 ## Documentos Relacionados
 
-| Documento | Conteúdo |
-|-----------|----------|
-| [STACK.md](STACK.md) | Stack tecnológica completa |
-| [RULES.md](RULES.md) | Requisitos funcionais e contrato de API |
-| [MODEL.md](MODEL.md) | Modelo de dados (PostgreSQL e MongoDB) |
-| [tdd/](tdd/README.md) | Technical Design Documents |
-| [adr/](adr/) | Architecture Decision Records |
-| [stories/](stories/) | Estórias de usuário |
+| Documento             | Conteúdo                                |
+|-----------------------|-----------------------------------------|
+| [STACK.md](STACK.md)  | Stack tecnológica completa              |
+| [RULES.md](RULES.md)  | Requisitos funcionais e contrato de API |
+| [MODEL.md](MODEL.md)  | Modelo de dados (PostgreSQL e MongoDB)  |
+| [tdd/](tdd/README.md) | Technical Design Documents              |
+| [adr/](adr/)          | Architecture Decision Records           |
+| [stories/](stories/)  | Estórias de usuário                     |
 
 ### ADRs
 
-| ADR | Decisão |
-|-----|---------|
-| [ADR-001](adr/ADR-001-minikube-local-cluster.md) | Minikube como cluster local |
-| [ADR-002](adr/ADR-002-java-spring-boot.md) | Java 21 e Spring Boot 4 |
-| [ADR-003](adr/ADR-003-postgresql-relacional.md) | PostgreSQL para persistência relacional |
-| [ADR-004](adr/ADR-004-mongodb-nosql.md) | MongoDB para logs de acesso |
-| [ADR-005](adr/ADR-005-dual-namespace.md) | Dois namespaces: `learning-lab` e `monitoring` |
-| [ADR-006](adr/ADR-006-statefulset-databases.md) | StatefulSet para bancos de dados |
-| [ADR-007](adr/ADR-007-prometheus-grafana.md) | Prometheus e Grafana para observabilidade |
+| ADR                                              | Decisão                                        |
+|--------------------------------------------------|------------------------------------------------|
+| [ADR-001](adr/ADR-001-minikube-local-cluster.md) | Minikube como cluster local                    |
+| [ADR-002](adr/ADR-002-java-spring-boot.md)       | Java 21 e Spring Boot 4                        |
+| [ADR-003](adr/ADR-003-postgresql-relacional.md)  | PostgreSQL para persistência relacional        |
+| [ADR-004](adr/ADR-004-mongodb-nosql.md)          | MongoDB para logs de acesso                    |
+| [ADR-005](adr/ADR-005-dual-namespace.md)         | Dois namespaces: `learning-lab` e `monitoring` |
+| [ADR-006](adr/ADR-006-statefulset-databases.md)  | StatefulSet para bancos de dados               |
+| [ADR-007](adr/ADR-007-prometheus-grafana.md)     | Prometheus e Grafana para observabilidade      |
 
 ### Estórias de Usuário
 
-| ID | Estória |
-|----|---------|
-| [US-001](stories/US-001-criar-produto.md) | Criar Produto |
-| [US-002](stories/US-002-atualizar-produto.md) | Atualizar Produto |
-| [US-003](stories/US-003-excluir-produto.md) | Excluir Produto |
-| [US-004](stories/US-004-consultar-produto.md) | Consultar Produto |
-| [US-005](stories/US-005-listar-produtos.md) | Listar Produtos |
+| ID                                                 | Estória                    |
+|----------------------------------------------------|----------------------------|
+| [US-001](stories/US-001-criar-produto.md)          | Criar Produto              |
+| [US-002](stories/US-002-atualizar-produto.md)      | Atualizar Produto          |
+| [US-003](stories/US-003-excluir-produto.md)        | Excluir Produto            |
+| [US-004](stories/US-004-consultar-produto.md)      | Consultar Produto          |
+| [US-005](stories/US-005-listar-produtos.md)        | Listar Produtos            |
 | [US-006](stories/US-006-registrar-log-consulta.md) | Registro Automático de Log |
-| [US-007](stories/US-007-consultar-logs.md) | Consultar Logs de Acesso |
-| [US-008](stories/US-008-filtrar-logs-produto.md) | Filtrar Logs por Produto |
+| [US-007](stories/US-007-consultar-logs.md)         | Consultar Logs de Acesso   |
+| [US-008](stories/US-008-filtrar-logs-produto.md)   | Filtrar Logs por Produto   |
 
 ---
 
@@ -428,52 +428,52 @@ monitoring     → observabilidade (Prometheus, Grafana)
 
 ### PostgreSQL
 
-| Atributo | Valor |
-|----------|-------|
-| Tipo | StatefulSet |
-| Réplicas | 1 |
-| Porta | 5432 |
+| Atributo  | Valor                                                             |
+|-----------|-------------------------------------------------------------------|
+| Tipo      | StatefulSet                                                       |
+| Réplicas  | 1                                                                 |
+| Porta     | 5432                                                              |
 | Resources | requests: cpu=250m, memory=256Mi / limits: cpu=500m, memory=512Mi |
-| Objetivo | Persistência relacional |
+| Objetivo  | Persistência relacional                                           |
 
 ---
 
 ### MongoDB
 
-| Atributo | Valor |
-|----------|-------|
-| Tipo | StatefulSet |
-| Réplicas | 1 |
-| Porta | 27017 |
+| Atributo  | Valor                                                             |
+|-----------|-------------------------------------------------------------------|
+| Tipo      | StatefulSet                                                       |
+| Réplicas  | 1                                                                 |
+| Porta     | 27017                                                             |
 | Resources | requests: cpu=250m, memory=256Mi / limits: cpu=500m, memory=512Mi |
-| Objetivo | Persistência NoSQL |
+| Objetivo  | Persistência NoSQL                                                |
 
 ---
 
 ### Log Collector
 
-| Atributo | Valor |
-|----------|-------|
-| Tipo | DaemonSet |
+| Atributo | Valor                                       |
+|----------|---------------------------------------------|
+| Tipo     | DaemonSet                                   |
 | Objetivo | Coleta de logs em todos os nodes do cluster |
 
 ---
 
 ### Seed de Dados
 
-| Atributo | Valor |
-|----------|-------|
-| Tipo | Job |
+| Atributo | Valor                                                    |
+|----------|----------------------------------------------------------|
+| Tipo     | Job                                                      |
 | Objetivo | Popular PostgreSQL com dados iniciais para demonstrações |
 
 ---
 
 ### Limpeza de Logs
 
-| Atributo | Valor |
-|----------|-------|
-| Tipo | CronJob |
-| Schedule | `0 2 * * *` (diário às 02h) |
+| Atributo | Valor                                             |
+|----------|---------------------------------------------------|
+| Tipo     | CronJob                                           |
+| Schedule | `0 2 * * *` (diário às 02h)                       |
 | Objetivo | Remover LogAcessos com mais de 30 dias do MongoDB |
 
 ---
