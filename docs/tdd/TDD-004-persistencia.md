@@ -4,6 +4,8 @@
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [MODEL.md](../MODEL.md) · [ADR-003](../adr/ADR-003-postgresql-relacional.md) · [ADR-004](../adr/ADR-004-mongodb-nosql.md) · [ADR-006](../adr/ADR-006-statefulset-databases.md)
+**Estórias:** [US-011](../stories/US-011-persistencia-statefulsets.md)
+**PRD:** [Fase 4 — Persistência](../PRD.md#fase-4--persistência) · [Cenário 4 — Persistência PostgreSQL](../PRD.md#cenário-4--persistência-postgresql) · [Cenário 5 — Persistência MongoDB](../PRD.md#cenário-5--persistência-mongodb)
 
 ---
 
@@ -32,7 +34,7 @@ kubectl get storageclass
 ### 3.1 ConfigMap
 
 ```yaml
-# k8s/postgres/postgresql-config.yaml
+# k8s/postgresql/postgresql-config.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -42,14 +44,14 @@ data:
   POSTGRES_DB: "pockub"
 ```
 
-Usuário e senha vêm do Secret `postgresql-secret` (ver [TDD-003](TDD-003-infraestrutura-kubernetes.md)).
+`POSTGRES_DB` fica aqui (não é sensível). Usuário e senha (`POSTGRES_USER`, `POSTGRES_PASSWORD`) vêm do Secret `postgresql-secret` (ver [TDD-003](TDD-003-infraestrutura-kubernetes.md)).
 
 ---
 
 ### 3.2 StatefulSet
 
 ```yaml
-# k8s/postgres/postgresql-statefulset.yaml
+# k8s/postgresql/postgresql-statefulset.yaml
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -114,25 +116,11 @@ spec:
 
 ---
 
-### 3.3 Migração de Schema (Init Container)
+### 3.3 Migração de Schema e Ordem de Startup
 
-O schema do PostgreSQL é criado antes do startup da API via Init Container no Deployment (alternativa ao Job):
+O schema é criado e evoluído pelo **Flyway, dentro da própria API**, no startup (`V1__create_produtos_table.sql`). Não existe Job de migration separado.
 
-```yaml
-# Trecho do Deployment product-api
-initContainers:
-  - name: wait-for-postgres
-    image: busybox:1.36
-    command:
-      - sh
-      - -c
-      - |
-        until nc -z postgresql 5432; do
-          echo "aguardando PostgreSQL..."; sleep 2
-        done
-```
-
-O Flyway no startup da API executa as migrations automaticamente ao conectar.
+Como o Flyway precisa do PostgreSQL acessível, o Deployment da API declara o `initContainer` `wait-for-postgres` (`nc -z postgresql 5432`), definido em [TDD-003 §5](TDD-003-infraestrutura-kubernetes.md). Sem ele, a API cairia em `CrashLoopBackOff` até o banco ficar pronto.
 
 ---
 
@@ -283,3 +271,21 @@ kubectl delete pvc postgres-data-postgresql-0
 | Sem autenticação MongoDB | POC sem auth — em produção configurar usuário/senha via Secret |
 | Sem replicação | 1 réplica por banco — sem HA; adequado para estudo |
 | Startup do PostgreSQL | `pg_isready` na probe pode falhar nos primeiros segundos de inicialização — `initialDelaySeconds: 30` mitiga isso |
+
+
+---
+
+## Definition of Ready
+
+- [x] Estórias vinculadas referenciadas
+- [x] Fase/Cenário do PRD referenciados
+- [x] ADRs relevantes e dependências de outros TDDs listados nas Referências
+- [x] Riscos documentados
+
+## Definition of Done
+
+- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [ ] StatefulSets `postgresql` e `mongodb` em `Running` com PVC `Bound`
+- [ ] Cenários 4 e 5 do PRD executados: dados preservados após `kubectl delete pod`
+- [ ] Arquivo `TDD-004-persistencia_explain.md` gerado
+- [ ] Estórias vinculadas atualizadas (US-011)

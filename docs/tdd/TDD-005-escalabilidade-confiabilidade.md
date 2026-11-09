@@ -4,6 +4,8 @@
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [ADR-001](../adr/ADR-001-minikube-local-cluster.md)
+**Estórias:** [US-012](../stories/US-012-confiabilidade-escalabilidade.md)
+**PRD:** [Fase 6 — Confiabilidade](../PRD.md#fase-6--confiabilidade) · [Fase 7 — Escalabilidade](../PRD.md#fase-7--escalabilidade) · [Cenário 6 — Recuperação Automática de Pod](../PRD.md#cenário-6--recuperação-automática-de-pod) · [Cenário 7 — Escalabilidade Manual](../PRD.md#cenário-7--escalabilidade-manual) · [Cenário 8 — Horizontal Pod Autoscaler](../PRD.md#cenário-8--horizontal-pod-autoscaler) · [Cenário 9 — Rolling Update](../PRD.md#cenário-9--rolling-update) · [Cenário 10 — Rollback](../PRD.md#cenário-10--rollback)
 
 ---
 
@@ -257,3 +259,22 @@ kubectl scale deployment product-api --replicas=1 -n learning-lab
 | HPA + JVM | A JVM aquece com o tempo (JIT) — métricas de CPU podem ser altas no início e baixar depois; aguardar estabilização antes de avaliar |
 | `stabilizationWindowSeconds` | Default 300s para scale-down — nos estudos pode ser reduzido para `60s` para ver o efeito mais rápido |
 | Requests muito baixos | `requests.cpu: 250m` é adequado para estudo; se a JVM pressionar mais, aumentar para evitar `OOMKilled` |
+
+
+---
+
+## Definition of Ready
+
+- [x] Estórias vinculadas referenciadas
+- [x] Fase/Cenário do PRD referenciados
+- [x] ADRs relevantes e dependências de outros TDDs listados nas Referências
+- [x] Riscos documentados
+
+## Definition of Done
+
+- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [ ] Probes, requests e limits aplicados e verificados com `kubectl describe pod`
+- [ ] HPA com métrica `cpu` válida (não `<unknown>`) em `kubectl get hpa`
+- [ ] Cenários 6 a 10 do PRD executados (incluindo Rolling Update sem downtime e Rollback)
+- [ ] Arquivo `TDD-005-escalabilidade-confiabilidade_explain.md` gerado
+- [ ] Estórias vinculadas atualizadas (US-012)

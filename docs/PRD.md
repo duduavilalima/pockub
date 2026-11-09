@@ -55,6 +55,36 @@ Junho/2026
 | [US-006](stories/US-006-registrar-log-consulta.md) | Registro Automático de Log |
 | [US-007](stories/US-007-consultar-logs.md)         | Consultar Logs de Acesso   |
 | [US-008](stories/US-008-filtrar-logs-produto.md)   | Filtrar Logs por Produto   |
+| [US-009](stories/US-009-containerizar-api.md) | Containerizar a Product API |
+| [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | Implantar a infraestrutura Kubernetes base |
+| [US-011](stories/US-011-persistencia-statefulsets.md) | Persistir dados com StatefulSets |
+| [US-012](stories/US-012-confiabilidade-escalabilidade.md) | Garantir confiabilidade e escalabilidade da API |
+| [US-013](stories/US-013-workloads-operacionais.md) | Executar workloads operacionais (Job, CronJob, DaemonSet) |
+| [US-014](stories/US-014-observabilidade.md) | Observar a plataforma com Prometheus e Grafana |
+| [US-015](stories/US-015-helm-chart.md) | Empacotar a plataforma em Helm Chart |
+| [US-016](stories/US-016-networkpolicy.md) | Isolar os bancos com NetworkPolicy |
+| [US-017](stories/US-017-simulacao-incidentes.md) | Simular incidentes e praticar troubleshooting |
+
+### Matriz de Rastreabilidade
+
+Fase do PRD → Estórias → TDDs. Regras e DoR/DoD em [CLAUDE.md](../CLAUDE.md#rastreabilidade-dor-e-dod).
+
+| Fase | Estórias | TDDs |
+|------|----------|------|
+| [Fase 1 — Fundamentos Kubernetes](#fase-1--fundamentos-kubernetes) | — (setup de ambiente) | — |
+| [Fase 2 — Aplicação](#fase-2--aplicação) | [US-001](stories/US-001-criar-produto.md), [US-002](stories/US-002-atualizar-produto.md), [US-003](stories/US-003-excluir-produto.md), [US-004](stories/US-004-consultar-produto.md), [US-005](stories/US-005-listar-produtos.md), [US-006](stories/US-006-registrar-log-consulta.md), [US-007](stories/US-007-consultar-logs.md), [US-008](stories/US-008-filtrar-logs-produto.md), [US-009](stories/US-009-containerizar-api.md) | [TDD-001](tdd/TDD-001-product-api.md), [TDD-002](tdd/TDD-002-containerizacao.md) |
+| [Fase 3 — Deploy da Aplicação](#fase-3--deploy-da-aplicação) | [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | [TDD-003](tdd/TDD-003-infraestrutura-kubernetes.md) |
+| [Fase 4 — Persistência](#fase-4--persistência) | [US-011](stories/US-011-persistencia-statefulsets.md) | [TDD-004](tdd/TDD-004-persistencia.md) |
+| [Fase 5 — Configuração](#fase-5--configuração) | [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | [TDD-003](tdd/TDD-003-infraestrutura-kubernetes.md) |
+| [Fase 6 — Confiabilidade](#fase-6--confiabilidade) | [US-012](stories/US-012-confiabilidade-escalabilidade.md) | [TDD-005](tdd/TDD-005-escalabilidade-confiabilidade.md) |
+| [Fase 7 — Escalabilidade](#fase-7--escalabilidade) | [US-012](stories/US-012-confiabilidade-escalabilidade.md) | [TDD-005](tdd/TDD-005-escalabilidade-confiabilidade.md) |
+| [Fase 8 — Exposição Externa](#fase-8--exposição-externa) | [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | [TDD-003](tdd/TDD-003-infraestrutura-kubernetes.md) |
+| [Fase 9 — Operação](#fase-9--operação) | [US-013](stories/US-013-workloads-operacionais.md) | [TDD-006](tdd/TDD-006-workloads-especiais.md) |
+| [Fase 10 — Observabilidade Avançada](#fase-10--observabilidade-avançada) | [US-014](stories/US-014-observabilidade.md) | [TDD-007](tdd/TDD-007-observabilidade.md) |
+| [Fase 11 — Segurança de Rede](#fase-11--segurança-de-rede) | [US-016](stories/US-016-networkpolicy.md) | a criar |
+| [Fase 12 — Helm](#fase-12--helm) | [US-015](stories/US-015-helm-chart.md) | [TDD-008](tdd/TDD-008-helm.md) |
+| [Fase 13 — Simulação de Incidentes](#fase-13--simulação-de-incidentes) | [US-017](stories/US-017-simulacao-incidentes.md) | a criar |
+| [Fase 14 — Terraform *(opcional — pós-POC)*](#fase-14--terraform-opcional--pós-poc) | — (opcional, fora do escopo da POC) | — |
 
 ---
 
@@ -209,7 +239,7 @@ Responsabilidades:
                         HTTP/HTTPS
                              │
                     [ Ingress Controller ]
-                    namespace: learning-lab
+                    namespace: ingress-nginx
                              │
                     [ Service: NodePort ]
                              │
@@ -231,7 +261,7 @@ Responsabilidades:
    └──────────┬──────────┘    └─────────────┬─────────────┘
               │                             │
            [ PVC ]                       [ PVC ]
-           postgres-pvc                  mongodb-pvc
+   postgres-data-postgresql-0     mongodb-data-mongodb-0
 
 
 [ Monitoring - namespace: monitoring ]
@@ -277,8 +307,9 @@ Cliente → Ingress → Service (NodePort) → Product API → MongoDB
 
 | Namespace | Conteúdo |
 |-----------|----------|
-| `learning-lab` | Product API, PostgreSQL, MongoDB |
+| `learning-lab` | Product API, PostgreSQL, MongoDB, DaemonSet, Job, CronJob |
 | `monitoring` | Prometheus, Grafana |
+| `ingress-nginx` | Ingress Controller (criado pelo addon do Minikube) |
 
 ---
 
@@ -292,7 +323,7 @@ O sistema deve permitir cadastrar produtos.
 |-------|--------|----------|------|--------|
 | - | POST | /produtos | `{ nome, descricao, preco, quantidadeEstoque }` | 201 / 400 |
 
-Validações: `nome` obrigatório, `preco > 0`, `quantidadeEstoque >= 0`.
+Validações: `nome` obrigatório (máx. 255 caracteres), `preco > 0`, `quantidadeEstoque >= 0`.
 
 ---
 
@@ -391,13 +422,13 @@ O sistema deve permitir consultar logs por produto.
 | Campo            | Tipo     | Restrições |
 | ---------------- | -------- | ---------- |
 | id               | String   | ObjectId, gerado automaticamente |
-| produtoId        | Long     | NOT NULL |
-| nomeProduto      | String   | NOT NULL |
+| produtoId        | Long     | nullable — `null` para `LISTAGEM` |
+| nomeProduto      | String   | nullable — `null` para `LISTAGEM` |
 | operacao         | Enum     | `CONSULTA` \| `LISTAGEM` |
 | timestamp        | DateTime | NOT NULL, gerado automaticamente |
-| origemRequisicao | String   | IP ou User-Agent da requisição |
+| origemRequisicao | String   | IP do cliente da requisição |
 
-Índices sugeridos: `produtoId` (para RF-008).
+Índices: `produtoId` (para RF-008) e `timestamp` (para o CronJob de limpeza).
 
 ---
 
@@ -406,8 +437,9 @@ O sistema deve permitir consultar logs por produto.
 ## Namespaces
 
 ```text
-learning-lab   → aplicação (Product API, PostgreSQL, MongoDB)
+learning-lab   → aplicação (Product API, PostgreSQL, MongoDB, DaemonSet, Job, CronJob)
 monitoring     → observabilidade (Prometheus, Grafana)
+ingress-nginx  → Ingress Controller (addon do Minikube)
 ```
 
 ---
@@ -1014,6 +1046,8 @@ Validação:
 
 * Product API consegue conectar ao PostgreSQL
 * Qualquer outro Pod bloqueado de acessar a porta 5432
+* MongoDB acessível apenas pela Product API e pelo CronJob `log-cleanup`
+* Pré-requisito: cluster iniciado com `--cni=calico`
 
 ---
 
@@ -1023,15 +1057,18 @@ Validação:
 kubernetes-learning-lab/
 
 docs/
-├── architecture/
-├── diagrams/
-├── runbooks/
-└── PRD.md
+├── PRD.md
+├── STACK.md
+├── RULES.md
+├── MODEL.md
+├── adr/
+├── stories/
+└── tdd/
 
 application/
 └── product-api/
 
-docker/
+docker/                    ← reservado (o Dockerfile fica em application/product-api/)
 
 k8s/
 ├── namespace/
@@ -1040,14 +1077,13 @@ k8s/
 ├── deployments/
 ├── services/
 ├── ingress/
-├── postgres/
+├── postgresql/
 ├── mongodb/
 ├── daemonsets/
 ├── jobs/
 ├── cronjobs/
 ├── hpa/
-├── networkpolicies/
-└── monitoring/
+└── networkpolicies/
 
 monitoring/
 ├── prometheus/
@@ -1241,7 +1277,8 @@ Entregáveis:
 Objetivos:
 
 * NetworkPolicy restringindo acesso ao PostgreSQL e MongoDB
-* Apenas a Product API autorizada a conectar nos bancos
+* Apenas a Product API autorizada a conectar nos bancos — exceção: o CronJob `log-cleanup` também precisa acessar o MongoDB e deve ter regra própria (label `app: log-cleanup`)
+* Minikube iniciado com `--cni=calico`; o CNI padrão não aplica NetworkPolicy
 * Demonstrar isolamento entre namespaces
 
 Entregáveis:

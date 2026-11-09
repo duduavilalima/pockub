@@ -43,12 +43,13 @@ pockub/
 │   ├── RULES.md               ← requisitos funcionais e contrato de API
 │   ├── MODEL.md               ← modelo de dados (PostgreSQL + MongoDB)
 │   ├── adr/                   ← Architecture Decision Records
+│   ├── tdd/                   ← Technical Design Documents (TDD-001 a TDD-008)
 │   └── stories/               ← estórias de usuário
 │
 ├── application/
 │   └── product-api/           ← Java 21 + Spring Boot 4
 │
-├── docker/                    ← Dockerfiles
+├── docker/                    ← reservado (o Dockerfile fica em application/product-api/)
 │
 ├── k8s/
 │   ├── namespace/
@@ -57,7 +58,7 @@ pockub/
 │   ├── deployments/
 │   ├── services/
 │   ├── ingress/
-│   ├── postgres/
+│   ├── postgresql/
 │   ├── mongodb/
 │   ├── daemonsets/
 │   ├── jobs/
@@ -94,7 +95,7 @@ pockub/
 | GET    | /produtos/{id}       | Consultar produto + gera log | 200 / 404       |
 | GET    | /produtos            | Listar produtos + gera log   | 200             |
 | GET    | /logs                | Listar logs de acesso        | 200             |
-| GET    | /logs?produtoId={id} | Filtrar logs por produto     | 200             |
+| GET    | /logs?produtoId={id} | Filtrar logs por produto     | 200 / 400       |
 
 Detalhes e exemplos: [`docs/RULES.md`](docs/RULES.md)
 
@@ -152,22 +153,22 @@ Detalhes, constraints e mapeamento Java: [`docs/MODEL.md`](docs/MODEL.md)
 
 ## Roadmap de Fases
 
-| Fase | Objetivo                | Entregável                                |
-|------|-------------------------|-------------------------------------------|
-| 1    | Fundamentos K8s         | Minikube + kubectl operacionais           |
-| 2    | Aplicação               | Imagem Docker da Product API              |
-| 3    | Deploy                  | API no K8s via Deployment + Service       |
-| 4    | Persistência            | PostgreSQL e MongoDB como StatefulSets    |
-| 5    | Configuração            | ConfigMaps e Secrets                      |
-| 6    | Confiabilidade          | Probes + Resource Requests/Limits         |
-| 7    | Escalabilidade          | HPA + Metrics Server                      |
-| 8    | Exposição externa       | Ingress Controller                        |
-| 9    | Operação                | Job, CronJob, DaemonSet, kubectl logs/top |
-| 10   | Observabilidade         | Prometheus + Grafana                      |
-| 11   | Segurança de rede       | NetworkPolicy                             |
-| 12   | Helm                    | Chart completo da plataforma              |
-| 13   | Simulação de incidentes | Falhas, rollbacks, troubleshooting        |
-| 14 *(opcional)* | Terraform (pós-POC) | Provisionar cluster EKS/GKE/AKS em cloud |
+| Fase            | Objetivo                | Entregável                                |
+|-----------------|-------------------------|-------------------------------------------|
+| 1               | Fundamentos K8s         | Minikube + kubectl operacionais           |
+| 2               | Aplicação               | Imagem Docker da Product API              |
+| 3               | Deploy                  | API no K8s via Deployment + Service       |
+| 4               | Persistência            | PostgreSQL e MongoDB como StatefulSets    |
+| 5               | Configuração            | ConfigMaps e Secrets                      |
+| 6               | Confiabilidade          | Probes + Resource Requests/Limits         |
+| 7               | Escalabilidade          | HPA + Metrics Server                      |
+| 8               | Exposição externa       | Ingress Controller                        |
+| 9               | Operação                | Job, CronJob, DaemonSet, kubectl logs/top |
+| 10              | Observabilidade         | Prometheus + Grafana                      |
+| 11              | Segurança de rede       | NetworkPolicy                             |
+| 12              | Helm                    | Chart completo da plataforma              |
+| 13              | Simulação de incidentes | Falhas, rollbacks, troubleshooting        |
+| 14 *(opcional)* | Terraform (pós-POC)     | Provisionar cluster EKS/GKE/AKS em cloud  |
 
 ---
 
@@ -175,7 +176,8 @@ Detalhes, constraints e mapeamento Java: [`docs/MODEL.md`](docs/MODEL.md)
 
 ```bash
 # Iniciar cluster
-minikube start --memory=4096 --cpus=2
+# --cni=calico é necessário para a NetworkPolicy ser aplicada (Fase 11)
+minikube start --memory=6144 --cpus=4 --cni=calico
 minikube addons enable ingress metrics-server registry
 
 # Aplicar namespace
@@ -207,6 +209,46 @@ helm install learning-lab helm/kubernetes-learning-lab/ -n learning-lab
 ---
 
 ## Regras de Workflow
+
+### Rastreabilidade, DoR e DoD
+
+Toda a documentação de trabalho segue a cadeia abaixo. Nenhum artefato fica "órfão".
+
+```
+PRD (Fase / Cenário / RF)  ←──  Estória (US-xxx)  ←──►  TDD-xxx  ──►  implementação + _explain
+```
+
+**Regras de referência (obrigatórias, nos dois sentidos):**
+
+1. Toda **estória** referencia: o RF em `docs/RULES.md` (quando houver), ao menos uma **Fase** e um **Cenário** do `docs/PRD.md`, e o **TDD** que a implementa (ou `a criar`).
+2. Todo **TDD** referencia as **estórias** (`Estórias:`) e a **Fase/Cenário** do PRD (`PRD:`) que ele atende, além de ADRs e outros TDDs.
+3. A referência é bidirecional: se o TDD cita `US-009`, a `US-009` cita o TDD. Ao criar ou alterar um lado, atualize o outro.
+4. Toda Fase do PRD deve ter ao menos uma estória (exceto a Fase 1, setup de ambiente, e a Fase 14, opcional e pós-POC); a matriz de rastreabilidade fica em `docs/PRD.md` (seção "Matriz de Rastreabilidade").
+5. Links usam caminhos relativos e âncoras válidas; não deixe link quebrado.
+
+**Ciclo de status** (campo `**Status:**` no cabeçalho de estórias e TDDs):
+
+| Status        | Significado                                                                  |
+|---------------|------------------------------------------------------------------------------|
+| `Draft`       | Em escrita ou revisão; DoR ainda não atendido                                |
+| `Ready`       | DoR atendido; pode ser implementado                                          |
+| `In Progress` | Implementação iniciada, DoD ainda não atendido                               |
+| `Done`        | DoD atendido e validado                                                      |
+
+O status da estória acompanha o do TDD: a estória só vai a `Done` quando todos os seus TDDs estiverem `Done`.
+Só marque `[x]` num critério de aceite depois de executar a validação correspondente.
+
+**Definition of Ready (DoR)**
+
+- *Estória:* formato Como/quero/para; critérios de aceite verificáveis; referências ao PRD (Fase e Cenário) e ao TDD preenchidas.
+- *TDD:* ao menos uma estória e uma Fase/Cenário do PRD referenciadas; ADRs relevantes existentes; dependências de outros TDDs listadas; seção de riscos preenchida.
+
+**Definition of Done (DoD)**
+
+- *Estória:* todos os critérios de aceite marcados `[x]` após validação; TDDs vinculados `Done`; Cenários do PRD correspondentes executados.
+- *TDD:* artefatos implementados conforme o documento (divergências registradas no próprio TDD); validação executada (testes automatizados verdes para código; `kubectl apply --dry-run=server`, `helm lint` ou cenário do PRD para manifests); arquivo `_explain` gerado (regra abaixo); estórias vinculadas atualizadas.
+
+Cada estória e cada TDD traz suas seções `Definition of Ready` e `Definition of Done`, com os itens específicos do artefato.
 
 ### Explicação pós-implementação de TDD
 

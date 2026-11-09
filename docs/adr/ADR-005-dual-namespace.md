@@ -30,6 +30,6 @@ Justificativas:
 
 ## Consequências
 
-- Prometheus precisa de permissão (ServiceAccount + ClusterRole) para scraping cross-namespace
+- Prometheus precisa de permissão (ServiceAccount + ClusterRole) para descobrir Pods/Endpoints cross-namespace via `kubernetes_sd_configs`
 - `kubectl` commands exigem flag `-n learning-lab` ou `-n monitoring` — reforça o aprendizado de namespaces
-- Ingress no namespace `learning-lab` — Ingress Controller instalado no namespace padrão pelo Minikube addon
+- O recurso Ingress fica no namespace `learning-lab`; o Ingress Controller (nginx) é instalado pelo addon do Minikube no namespace próprio `ingress-nginx`

@@ -1,9 +1,11 @@
 # TDD-001 — Product API
 
-**Status:** Draft
+**Status:** In Progress
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [STACK.md](../STACK.md) · [RULES.md](../RULES.md) · [MODEL.md](../MODEL.md) · [ADR-002](../adr/ADR-002-java-spring-boot.md)
+**Estórias:** [US-001](../stories/US-001-criar-produto.md) · [US-002](../stories/US-002-atualizar-produto.md) · [US-003](../stories/US-003-excluir-produto.md) · [US-004](../stories/US-004-consultar-produto.md) · [US-005](../stories/US-005-listar-produtos.md) · [US-006](../stories/US-006-registrar-log-consulta.md) · [US-007](../stories/US-007-consultar-logs.md) · [US-008](../stories/US-008-filtrar-logs-produto.md)
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 
 ---
 
@@ -47,7 +49,7 @@ br.com.lima.pockub
 
 ├── controller/
 │   ├── ProdutoController.java        ← @RestController /produtos
-│   └── LogAcessoController.java      ← @RestController /logs
+│   └── LogAcessoController.java      ← @RestController /logs (consulta o LogAcessoRepository direto — leitura sem regra de negócio)
 
 ├── dto/
 │   ├── ProdutoRequest.java           ← input validado com Bean Validation
@@ -153,7 +155,9 @@ findAll():
 ```java
 @Async
 public void registrar(Long produtoId, String nomeProduto,
-                      Operacao operacao, String origem) {
+                      Operacao operacao, LocalDateTime timestamp, String origem) {
+    // timestamp é capturado pelo chamador (thread da requisição), não aqui,
+    // para refletir o momento real da operação e não o da gravação no MongoDB
     // persiste no MongoDB via LogAcessoRepository
     // falha silenciosa — loga o erro mas não propaga
 }
@@ -175,7 +179,7 @@ GET    /produtos/{id}         → consultar (gera log CONSULTA)
 GET    /produtos              → listar   (gera log LISTAGEM)
 ```
 
-`origemRequisicao` extraída via `HttpServletRequest.getRemoteAddr()`.
+`origemRequisicao` extraída via `HttpServletRequest.getRemoteAddr()` na thread da requisição (não é acessível no `@Async`). Atrás do Ingress, `server.forward-headers-strategy: native` faz o `getRemoteAddr()` devolver o IP real do cliente (`X-Forwarded-For`).
 
 ### 6.2 LogAcessoController
 
@@ -232,6 +236,9 @@ public record ProdutoResponse(
 ### application.yaml
 
 ```yaml
+server:
+  forward-headers-strategy: native
+
 spring:
   datasource:
     url: ${DB_URL}
@@ -293,7 +300,7 @@ public class AsyncConfig {
 
 ## 11. Migrações de Banco
 
-Flyway ou Liquibase gerencia o schema do PostgreSQL.
+Flyway gerencia o schema do PostgreSQL e executa as migrations no startup da própria API.
 
 Localização dos scripts: `src/main/resources/db/migration/`
 
@@ -314,4 +321,23 @@ V1__create_produtos_table.sql
 | Startup lento da JVM | `startupProbe` com `failureThreshold: 12` e `periodSeconds: 5` (60s total) |
 | Falha no MongoDB | Log assíncrono com tratamento silencioso — não derruba a API |
 | Thread pool `@Async` | Monitorar saturação da fila via métricas do Actuator em carga alta |
-| `ddl-auto: validate` | Schema precisa existir antes do startup — Migration deve rodar primeiro (via Init Container ou Job K8s) |
+| `ddl-auto: validate` | O Flyway roda no startup da API antes do Hibernate validar; basta o PostgreSQL estar acessível — por isso o Deployment usa um `initContainer` que aguarda a porta 5432 (ver [TDD-004](TDD-004-persistencia.md)) |
+
+
+---
+
+## Definition of Ready
+
+- [x] Estórias vinculadas referenciadas
+- [x] Fase/Cenário do PRD referenciados
+- [x] ADRs relevantes e dependências de outros TDDs listados nas Referências
+- [x] Riscos documentados
+
+## Definition of Done
+
+- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [ ] Suíte `./mvnw test` verde, com PostgreSQL e MongoDB disponíveis
+- [ ] Cada critério de aceite de US-001 a US-008 coberto por teste automatizado
+- [ ] Cenários 2 e 3 do PRD executados com `curl` (ver `_explain`)
+- [ ] Arquivo `TDD-001-product-api_explain.md` gerado
+- [ ] Estórias vinculadas atualizadas (US-001, US-002, US-003, US-004, US-005, US-006, US-007, US-008)

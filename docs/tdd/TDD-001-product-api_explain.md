@@ -18,25 +18,25 @@
 
 ### Arquivos criados
 
-| Arquivo | Descrição |
-|---------|-----------|
-| `domain/Operacao.java` | Enum `CONSULTA` / `LISTAGEM` |
-| `domain/Produto.java` | Entidade JPA mapeada para a tabela `produtos` |
-| `domain/LogAcesso.java` | Documento MongoDB para a collection `access_logs` |
-| `repository/ProdutoRepository.java` | `JpaRepository<Produto, Long>` sem queries customizadas |
-| `repository/LogAcessoRepository.java` | `MongoRepository` com dois métodos derivados ordenados por `timestamp DESC` |
-| `dto/ProdutoRequest.java` | Record com Bean Validation para criação/atualização |
-| `dto/ProdutoResponse.java` | Record de saída com factory method `from(Produto)` |
-| `dto/LogAcessoResponse.java` | Record de saída com factory method `from(LogAcesso)` |
-| `exception/ProdutoNotFoundException.java` | RuntimeException com mensagem padronizada |
-| `exception/GlobalExceptionHandler.java` | `@RestControllerAdvice` centralizando 404, 400 e 500 |
-| `config/AsyncConfig.java` | Thread pool dedicado para gravação assíncrona de logs |
-| `service/LogAcessoService.java` | Persiste `LogAcesso` no MongoDB de forma assíncrona (`@Async`) |
-| `service/ProdutoService.java` | CRUD completo + orquestra o disparo de logs |
-| `controller/ProdutoController.java` | 5 endpoints REST para `/produtos` |
-| `controller/LogAcessoController.java` | 1 endpoint REST `/logs` com filtro opcional por `produtoId` |
-| `resources/application.yaml` | Configuração externalizada via variáveis de ambiente |
-| `resources/db/migration/V1__create_produtos_table.sql` | Criação da tabela `produtos` com constraints e índice em `nome` |
+| Arquivo                                                | Descrição                                                                   |
+|--------------------------------------------------------|-----------------------------------------------------------------------------|
+| `domain/Operacao.java`                                 | Enum `CONSULTA` / `LISTAGEM`                                                |
+| `domain/Produto.java`                                  | Entidade JPA mapeada para a tabela `produtos`                               |
+| `domain/LogAcesso.java`                                | Documento MongoDB para a collection `access_logs`                           |
+| `repository/ProdutoRepository.java`                    | `JpaRepository<Produto, Long>` sem queries customizadas                     |
+| `repository/LogAcessoRepository.java`                  | `MongoRepository` com dois métodos derivados ordenados por `timestamp DESC` |
+| `dto/ProdutoRequest.java`                              | Record com Bean Validation para criação/atualização                         |
+| `dto/ProdutoResponse.java`                             | Record de saída com factory method `from(Produto)`                          |
+| `dto/LogAcessoResponse.java`                           | Record de saída com factory method `from(LogAcesso)`                        |
+| `exception/ProdutoNotFoundException.java`              | RuntimeException com mensagem padronizada                                   |
+| `exception/GlobalExceptionHandler.java`                | `@RestControllerAdvice` centralizando 404, 400 e 500                        |
+| `config/AsyncConfig.java`                              | Thread pool dedicado para gravação assíncrona de logs                       |
+| `service/LogAcessoService.java`                        | Persiste `LogAcesso` no MongoDB de forma assíncrona (`@Async`)              |
+| `service/ProdutoService.java`                          | CRUD completo + orquestra o disparo de logs                                 |
+| `controller/ProdutoController.java`                    | 5 endpoints REST para `/produtos`                                           |
+| `controller/LogAcessoController.java`                  | 1 endpoint REST `/logs` com filtro opcional por `produtoId`                 |
+| `resources/application.yaml`                           | Configuração externalizada via variáveis de ambiente                        |
+| `resources/db/migration/V1__create_produtos_table.sql` | Criação da tabela `produtos` com constraints e índice em `nome`             |
 
 ---
 

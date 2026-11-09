@@ -1,6 +1,9 @@
 # US-002 — Atualizar Produto
 
 **Requisito:** [RF-002](../RULES.md#rf-002--atualizar-produto)
+**Status:** In Progress
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos) · [RF-002 - Atualizar Produto](../PRD.md#rf-002---atualizar-produto)
+**TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
 ---
 
@@ -53,3 +56,19 @@ Content-Type: application/json
   "dataAtualizacao": "2026-06-03T11:30:00"
 }
 ```
+
+
+---
+
+## Definition of Ready
+
+- [x] Estória no formato Como/quero/para
+- [x] Critérios de aceite verificáveis
+- [x] Referências ao PRD (Fase e Cenário) preenchidas
+- [x] TDD associado identificado
+
+## Definition of Done
+
+- [ ] Todos os critérios de aceite validados e marcados `[x]`
+- [ ] TDD-001 com status `Done`
+- [ ] Cenário 2 do PRD executado(s)

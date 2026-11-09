@@ -4,6 +4,8 @@
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [PRD — Seção 9](../PRD.md) · [TDD-003](TDD-003-infraestrutura-kubernetes.md)
+**Estórias:** [US-013](../stories/US-013-workloads-operacionais.md)
+**PRD:** [Fase 9 — Operação](../PRD.md#fase-9--operação) · [Cenário 14 — Job (Seed de Dados)](../PRD.md#cenário-14--job-seed-de-dados) · [Cenário 15 — CronJob (Limpeza de Logs)](../PRD.md#cenário-15--cronjob-limpeza-de-logs) · [Cenário 16 — DaemonSet (Log Collector)](../PRD.md#cenário-16--daemonset-log-collector)
 
 ---
 
@@ -116,6 +118,9 @@ spec:
     spec:
       backoffLimit: 2
       template:
+        metadata:
+          labels:
+            app: log-cleanup      # usado pela NetworkPolicy que libera o acesso ao MongoDB
         spec:
           restartPolicy: OnFailure
           containers:
@@ -267,4 +272,25 @@ O Minikube tem apenas 1 node — o DaemonSet cria exatamente 1 Pod. Em clusters 
 | Job idempotente | O seed verifica se os produtos já existem antes de inserir (evitar duplicatas ao re-executar) |
 | CronJob timezone | Por padrão usa UTC — ajustar `timeZone: "America/Sao_Paulo"` se necessário (K8s 1.27+) |
 | DaemonSet em control-plane | O `toleration` é necessário no Minikube pois o único node é também control-plane |
+| NetworkPolicy (Fase 11) | O CronJob conecta direto no MongoDB; a policy de isolamento do banco deve permitir Pods com `app: log-cleanup` além da `product-api` |
 | `ttlSecondsAfterFinished` | Limpa Jobs concluídos automaticamente — sem isso, Jobs `Complete` acumulam no namespace |
+
+
+---
+
+## Definition of Ready
+
+- [x] Estórias vinculadas referenciadas
+- [x] Fase/Cenário do PRD referenciados
+- [x] ADRs relevantes e dependências de outros TDDs listados nas Referências
+- [x] Riscos documentados
+
+## Definition of Done
+
+- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [ ] Job `seed-data` com status `Complete` e produtos visíveis em `GET /produtos`
+- [ ] CronJob disparado manualmente com `kubectl create job --from=cronjob/log-cleanup`
+- [ ] DaemonSet com 1 Pod por node
+- [ ] Cenários 14, 15 e 16 do PRD executados
+- [ ] Arquivo `TDD-006-workloads-especiais_explain.md` gerado
+- [ ] Estórias vinculadas atualizadas (US-013)

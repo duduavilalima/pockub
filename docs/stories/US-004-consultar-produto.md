@@ -1,6 +1,9 @@
 # US-004 — Consultar Produto
 
 **Requisito:** [RF-004](../RULES.md#rf-004--consultar-produto)
+**Status:** In Progress
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria) · [RF-004 - Consultar Produto](../PRD.md#rf-004---consultar-produto)
+**TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
 ---
 
@@ -57,3 +60,19 @@ Content-Type: application/json
   "origemRequisicao": "192.168.1.10"
 }
 ```
+
+
+---
+
+## Definition of Ready
+
+- [x] Estória no formato Como/quero/para
+- [x] Critérios de aceite verificáveis
+- [x] Referências ao PRD (Fase e Cenário) preenchidas
+- [x] TDD associado identificado
+
+## Definition of Done
+
+- [ ] Todos os critérios de aceite validados e marcados `[x]`
+- [ ] TDD-001 com status `Done`
+- [ ] Cenário 2, Cenário 3 do PRD executado(s)

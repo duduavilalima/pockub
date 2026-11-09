@@ -23,7 +23,7 @@ Usar **StatefulSet** para PostgreSQL e MongoDB.
 Justificativas:
 - StatefulSet é o padrão K8s para workloads stateful — bancos de dados são o caso de uso canônico
 - Demonstra dois workloads K8s distintos: Deployment (stateless) vs StatefulSet (stateful)
-- PVC vinculado ao Pod pelo nome estável (`postgres-0`, `mongodb-0`) — o volume sobrevive ao Pod
+- PVC vinculado ao Pod pelo nome estável (`postgresql-0`, `mongodb-0`) — o volume sobrevive ao Pod
 - Comportamento de exclusão ordenada relevante para futuras extensões com replicação
 
 ---

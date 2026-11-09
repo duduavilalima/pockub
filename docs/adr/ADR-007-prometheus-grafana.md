@@ -33,8 +33,8 @@ Justificativas:
 
 ## Consequências
 
-- Prometheus precisa de ServiceAccount com permissão para scraping cross-namespace (ver [ADR-005](ADR-005-dual-namespace.md))
-- Requer configuração de `scrape_config` apontando para o Service da Product API em `learning-lab`
+- Prometheus precisa de ServiceAccount com permissão para service discovery (Pods) cross-namespace (ver [ADR-005](ADR-005-dual-namespace.md))
+- Requer `scrape_config` com `kubernetes_sd_configs` (role `pod`) em `learning-lab`, filtrando Pods pela annotation `prometheus.io/scrape` — assim cada réplica da API é um target separado
 - Grafana precisa ser configurado com Prometheus como datasource
-- Recursos adicionais consumidos no Minikube — pode exigir aumento de memória do cluster (`minikube start --memory=4096`)
+- Recursos adicionais consumidos no Minikube — pode exigir aumento de memória do cluster (`minikube start --memory=6144 --cpus=4`)
 - Dados do Prometheus são efêmeros por padrão — sem PVC, métricas são perdidas ao reiniciar o Pod

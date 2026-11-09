@@ -34,7 +34,8 @@ Justificativas:
 
 ## Consequências
 
-- Cluster single-node — não demonstra scheduling multi-node real
+- Por padrão single-node (o Minikube aceita `--nodes N`, mas consome mais recursos) — não demonstra scheduling multi-node real
 - DaemonSet terá apenas 1 Pod (1 node = 1 réplica)
+- NetworkPolicy só é aplicada com um CNI que a suporte — iniciar com `--cni=calico`
 - LoadBalancer requer `minikube tunnel` para funcionar localmente
 - Ambiente não reflete limitações de rede de clusters corporativos

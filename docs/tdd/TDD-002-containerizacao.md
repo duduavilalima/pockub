@@ -4,6 +4,8 @@
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [TDD-001](TDD-001-product-api.md) · [ADR-002](../adr/ADR-002-java-spring-boot.md)
+**Estórias:** [US-009](../stories/US-009-containerizar-api.md)
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 1 — Deploy Completo da Plataforma](../PRD.md#cenário-1--deploy-completo-da-plataforma)
 
 ---
 
@@ -103,6 +105,8 @@ docker push localhost:5000/product-api:1.0.0
 
 ### Convenção de Tags
 
+A tag da imagem é independente da `<version>` do `pom.xml` (`0.0.1-SNAPSHOT`): ela versiona a imagem implantada, não o artefato Maven.
+
 | Tag | Uso |
 |-----|-----|
 | `1.0.0` | versão estável para demonstrações |
@@ -138,10 +142,10 @@ Todas as configurações sensíveis são injetadas via Kubernetes — a imagem n
 
 | Variável | Fonte K8s | Exemplo |
 |----------|-----------|---------|
-| `DB_URL` | ConfigMap | `jdbc:postgresql://postgresql:5432/pockub` |
-| `DB_USERNAME` | Secret | `pockub` |
-| `DB_PASSWORD` | Secret | `*****` |
-| `MONGO_URI` | Secret | `mongodb://mongodb:27017/pockub` |
+| `DB_URL` | ConfigMap `product-api-config` | `jdbc:postgresql://postgresql:5432/pockub` |
+| `MONGO_URI` | ConfigMap `product-api-config` | `mongodb://mongodb:27017/pockub` (sem credenciais — MongoDB sem auth na POC) |
+| `DB_USERNAME` | Secret `product-api-secret` | `pockub` |
+| `DB_PASSWORD` | Secret `product-api-secret` | `*****` |
 
 Detalhes: [TDD-003](TDD-003-infraestrutura-kubernetes.md)
 
@@ -155,3 +159,22 @@ Detalhes: [TDD-003](TDD-003-infraestrutura-kubernetes.md)
 | Usuário não-root | Obrigatório em clusters com `PodSecurity` — boa prática mesmo no Minikube |
 | `imagePullPolicy: Always` | Não usar no ambiente de estudo — força pull externo desnecessário |
 | JVM flags | Para containers pequenos, considerar `-XX:MaxRAMPercentage=75.0` para limitar heap ao container |
+
+
+---
+
+## Definition of Ready
+
+- [x] Estórias vinculadas referenciadas
+- [x] Fase/Cenário do PRD referenciados
+- [x] ADRs relevantes e dependências de outros TDDs listados nas Referências
+- [x] Riscos documentados
+
+## Definition of Done
+
+- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [ ] `docker build` conclui e a imagem `product-api:1.0.0` sobe com usuário não-root
+- [ ] Imagem acessível pelo cluster (build no daemon do Minikube ou registry)
+- [ ] Tamanho final da imagem conferido com `docker images`
+- [ ] Arquivo `TDD-002-containerizacao_explain.md` gerado
+- [ ] Estórias vinculadas atualizadas (US-009)
