@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-api
+  namespace: learning-lab
+spec:
+  selector:
+    app: product-api
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080     # remover junto com `type: NodePort` na Fase 8
+  type: NodePort          # Fases 3-7: acesso direto; Fase 8: trocar para ClusterIP
