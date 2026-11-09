@@ -1,6 +1,6 @@
 # TDD-002 — Containerização
 
-**Status:** Ready
+**Status:** Done
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [TDD-001](TDD-001-product-api.md) · [ADR-002](../adr/ADR-002-java-spring-boot.md)
@@ -147,7 +147,7 @@ Como a imagem existe apenas no daemon do Minikube, `IfNotPresent` (ou `Never`) �
 | Stage | Base | Tamanho estimado |
 |-------|------|-----------------|
 | builder | `maven:3.9-eclipse-temurin-21` | ~600 MB (descartado) |
-| runtime | `eclipse-temurin:21-jre-alpine` | ~80 MB + JAR (~30 MB) ≈ 110 MB |
+| runtime | `eclipse-temurin:21-jre-alpine` | ~80 MB + JAR (~30 MB) ≈ 110 MB estimado; **medido: ~277 MB** (disk usage) |
 
 A separação de stages garante que ferramentas de build (Maven, JDK completo) não entrem na imagem de produção.
 
@@ -189,9 +189,9 @@ Detalhes: [TDD-003](TDD-003-infraestrutura-kubernetes.md)
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] `docker build` conclui e a imagem `product-api:1.0.0` sobe com usuário não-root
-- [ ] Imagem construída no daemon do Minikube e visível em `docker images` após `eval $(minikube docker-env)`
-- [ ] Tamanho final da imagem conferido com `docker images`
-- [ ] Arquivo `TDD-002-containerizacao_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-009)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] `docker build` conclui e a imagem `product-api:1.0.0` sobe com usuário não-root
+- [x] Imagem construída no daemon do Minikube e visível em `docker images` após `eval $(minikube docker-env)`
+- [x] Tamanho final da imagem conferido com `docker images`
+- [x] Arquivo `TDD-002-containerizacao_explain.md` gerado
+- [x] Estórias vinculadas atualizadas (US-009)
