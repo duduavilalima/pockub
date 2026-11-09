@@ -22,13 +22,14 @@ public class LogAcessoService {
     }
 
     @Async
-    public void registrar(Long produtoId, String nomeProduto, Operacao operacao, String origem) {
+    public void registrar(Long produtoId, String nomeProduto, Operacao operacao,
+                         LocalDateTime timestamp, String origem) {
         try {
             LogAcesso logAcesso = LogAcesso.builder()
                     .produtoId(produtoId)
                     .nomeProduto(nomeProduto)
                     .operacao(operacao)
-                    .timestamp(LocalDateTime.now())
+                    .timestamp(timestamp)
                     .origemRequisicao(origem)
                     .build();
             logAcessoRepository.save(logAcesso);
