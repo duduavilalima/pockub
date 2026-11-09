@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: product-api-ingress
+  namespace: learning-lab
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: product-api.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: product-api
+                port:
+                  number: 80

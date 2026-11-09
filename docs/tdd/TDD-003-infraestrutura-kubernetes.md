@@ -1,6 +1,6 @@
 # TDD-003 — Infraestrutura Kubernetes Base
 
-**Status:** Ready
+**Status:** In Progress
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [ADR-001](../adr/ADR-001-minikube-local-cluster.md) · [ADR-005](../adr/ADR-005-dual-namespace.md) · [TDD-004](TDD-004-persistencia.md) · [TDD-005](TDD-005-escalabilidade-confiabilidade.md)
@@ -394,9 +394,9 @@ kubectl apply -f k8s/ingress/
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] Manifests aplicados na ordem da seção 10 sem erro (`kubectl apply --dry-run=server` antes)
-- [ ] API responde via NodePort e via Ingress (`product-api.local`)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [ ] Manifests aplicados na ordem da seção 10 sem erro (dry-run OK; aplicados com bancos temporários — falta com os StatefulSets do TDD-004)
+- [x] API responde via NodePort e via Ingress (`product-api.local`)
 - [ ] Cenários 1, 11, 12 e 17 do PRD executados
-- [ ] Arquivo `TDD-003-infraestrutura-kubernetes_explain.md` gerado
+- [x] Arquivo `TDD-003-infraestrutura-kubernetes_explain.md` gerado
 - [ ] Estórias vinculadas atualizadas (US-010)
