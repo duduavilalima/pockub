@@ -1,7 +1,7 @@
 # US-007 — Consultar Logs de Acesso
 
 **Requisito:** [RF-007](../RULES.md#rf-007--consultar-logs)
-**Status:** In Progress
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
@@ -17,10 +17,10 @@
 
 ## Critérios de Aceite
 
-- [ ] `GET /logs` retorna `200 OK` com array de logs
-- [ ] Retorna array vazio `[]` quando não há logs — não retorna `404`
-- [ ] Logs ordenados por `timestamp` decrescente (mais recentes primeiro)
-- [ ] Todos os campos do `LogAcesso` retornados na resposta
+- [x] `GET /logs` retorna `200 OK` com array de logs
+- [x] Retorna array vazio `[]` quando não há logs — não retorna `404`
+- [x] Logs ordenados por `timestamp` decrescente (mais recentes primeiro)
+- [x] Todos os campos do `LogAcesso` retornados na resposta
 
 ---
 
@@ -68,6 +68,6 @@ Content-Type: application/json
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-001 com status `Done`
-- [ ] Cenário 3 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-001 com status `Done`
+- [x] Cenário 3 do PRD executado(s)

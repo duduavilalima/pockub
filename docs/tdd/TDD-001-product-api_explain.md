@@ -13,8 +13,8 @@
   - `spring-boot-starter-validation` — Bean Validation para DTOs
   - `spring-boot-starter-actuator` — health/prometheus endpoints para K8s
   - `micrometer-registry-prometheus` — exportação de métricas no formato Prometheus
-  - `flyway-core` + `flyway-database-postgresql` — gerenciamento de schema
-- Dependências de teste corrigidas: os starters inexistentes (`*-data-jpa-test`, `*-mongodb-test`, `*-webmvc-test`) foram substituídos por `spring-boot-starter-test`
+  - `spring-boot-starter-flyway` + `flyway-database-postgresql` — gerenciamento de schema (no Spring Boot 4 o `flyway-core` sozinho **não** ativa a auto-configuração)
+- Dependências de teste corrigidas: os starters inexistentes (`*-data-jpa-test`, `*-mongodb-test`, `*-webmvc-test`) foram substituídos por `spring-boot-starter-test`; para a suíte completa foram adicionados `spring-boot-starter-webmvc-test` (`@WebMvcTest`), `spring-boot-testcontainers` e `testcontainers-{junit-jupiter,postgresql,mongodb}`
 
 ### Arquivos criados
 
@@ -109,9 +109,38 @@ O bean do `AsyncConfig` se chama `taskExecutor`; `log-async-` é apenas o **pref
 ### `produtoId` null para LISTAGEM
 O campo `produtoId` em `LogAcesso` é `null` para operações `LISTAGEM` (o MODEL.md o define como nullable). Essa decisão é o que garante que os logs de LISTAGEM **não** apareçam em `GET /logs?produtoId={id}`: o `produtoId` do request é sempre um `Long` não-nulo (um valor não numérico gera `400` antes de chegar ao repository), então `findByProdutoIdOrderByTimestampDesc(1)` nunca casa com documentos de `produtoId = null`. Atenção: uma futura chamada interna com `produtoId = null` retornaria exatamente os logs de LISTAGEM.
 
+### Testes: o que foram e por que existem
+A suíte (`./mvnw test`, 43 testes) segue a pirâmide do CLAUDE.md:
+
+- **Unitários (Mockito)** — `ProdutoServiceTest`, `LogAcessoServiceTest`: regra isolada, 404, `verify(never())` para escritas, timestamp vindo do chamador, falha do Mongo engolida.
+- **Slice web (`@WebMvcTest`)** — `ProdutoControllerTest`, `LogAcessoControllerTest`: status, validação, `400` para tipo inválido, `getRemoteAddr()` repassado como origem.
+- **Integração (Testcontainers)** — `ProdutoApiIntegrationTest`, `LogAssincronoIntegrationTest`, `PockubApplicationTests`: PostgreSQL 17 e MongoDB 7 reais, iniciados **uma vez** em `AbstractIntegrationTest` (singleton estático) e compartilhados. Exercitam Flyway + `ddl-auto: validate`, datas automáticas, ordenação, logs preservados após o `DELETE` e a thread `log-async-*`.
+
+### Bugs que só os testes de integração revelaram
+1. **Flyway não rodava** — `flyway-core` isolado não basta no Spring Boot 4; sem o starter a tabela não era criada e o Hibernate falhava na validação. Um H2 não teria pegado isso.
+2. **`dataAtualizacao` desatualizada no `PUT`** — `@UpdateTimestamp` só dispara no flush; a resposta era montada antes do commit. Correção: `saveAndFlush`.
+3. **Erros de tipo respondiam `500`** — tratados agora no `GlobalExceptionHandler` (`400` para id/`produtoId` inválido e JSON malformado, `404` para rota inexistente).
+
+### Alternativas descartadas nos testes
+H2/Mongo embarcado (não exercitam Flyway nem índices reais); `@ServiceConnection` com containers por classe (mais lento: um único par de containers por execução basta); `Thread.sleep` para esperar o log assíncrono (usa-se Awaitility).
+
+### Armadilhas dos testes
+- Os testes de integração exigem **Docker** disponível; sem ele a suíte falha ao iniciar os containers.
+- O log é gravado de forma assíncrona: os testes aguardam (`await`) a contagem esperada antes de seguir, para um log tardio não vazar para o teste seguinte (a limpeza roda em `@BeforeEach`).
+- `LogAssincronoIntegrationTest` usa `@MockitoSpyBean`, que gera um contexto Spring separado; por isso ficou em classe própria.
+
 ---
 
 ## 5. Como validar
+
+### Rodar a suíte completa (requer Docker)
+
+```bash
+cd application/product-api
+./mvnw test
+```
+
+Esperado: `Tests run: 43, Failures: 0, Errors: 0` e `BUILD SUCCESS`.
 
 ### Compilar
 
@@ -179,5 +208,9 @@ curl -s http://localhost:8080/produtos/999 | jq
 curl -s -X POST http://localhost:8080/produtos \
   -H "Content-Type: application/json" \
   -d '{"nome":"","preco":-1,"quantidadeEstoque":-5}' | jq
-# {"erros":["não deve estar em branco","deve ser maior que 0","deve ser maior que ou igual a 0"]}
+# {"erros":[...]}  (mensagens do Bean Validation, no locale da JVM)
+
+# 400 — id/produtoId não numérico
+curl -s "http://localhost:8080/logs?produtoId=abc" | jq
+# {"erro":"Valor inválido para o parâmetro 'produtoId'"}
 ```

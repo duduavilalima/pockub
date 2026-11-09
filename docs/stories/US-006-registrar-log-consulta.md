@@ -1,7 +1,7 @@
 # US-006 — Registro Automático de Log de Consulta
 
 **Requisito:** [RF-006](../RULES.md#rf-006--registrar-log-de-consulta)
-**Status:** In Progress
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
@@ -17,13 +17,13 @@
 
 ## Critérios de Aceite
 
-- [ ] Toda chamada a `GET /produtos/{id}` gera um log com `operacao: CONSULTA`
-- [ ] Toda chamada a `GET /produtos` gera um log com `operacao: LISTAGEM`
-- [ ] Operações de escrita (`POST`, `PUT`, `DELETE`) **não** geram log de acesso
-- [ ] Log persiste no MongoDB na collection `access_logs`
-- [ ] `timestamp` reflete o momento real da operação (não o momento de escrita no MongoDB)
-- [ ] `origemRequisicao` captura o IP do cliente da requisição HTTP (atrás do Ingress, via `X-Forwarded-For`)
-- [ ] Falha na gravação do log **não** propaga exceção para o cliente — resposta principal não é afetada
+- [x] Toda chamada a `GET /produtos/{id}` gera um log com `operacao: CONSULTA`
+- [x] Toda chamada a `GET /produtos` gera um log com `operacao: LISTAGEM`
+- [x] Operações de escrita (`POST`, `PUT`, `DELETE`) **não** geram log de acesso
+- [x] Log persiste no MongoDB na collection `access_logs`
+- [x] `timestamp` reflete o momento real da operação (não o momento de escrita no MongoDB)
+- [x] `origemRequisicao` captura o IP do cliente da requisição HTTP (atrás do Ingress, via `X-Forwarded-For`)
+- [x] Falha na gravação do log **não** propaga exceção para o cliente — resposta principal não é afetada
 
 ---
 
@@ -56,6 +56,6 @@
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-001 com status `Done`
-- [ ] Cenário 3 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-001 com status `Done`
+- [x] Cenário 3 do PRD executado(s)

@@ -1,7 +1,7 @@
 # US-003 — Excluir Produto
 
 **Requisito:** [RF-003](../RULES.md#rf-003--excluir-produto)
-**Status:** In Progress
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
@@ -17,10 +17,10 @@
 
 ## Critérios de Aceite
 
-- [ ] `DELETE /produtos/{id}` retorna `204 No Content` quando o produto existe e é excluído
-- [ ] Produto removido do PostgreSQL — `GET /produtos/{id}` retorna `404` após a exclusão
-- [ ] `id` inexistente retorna `404 Not Found`
-- [ ] Logs de acesso do produto no MongoDB **não** são excluídos (preservação de auditoria)
+- [x] `DELETE /produtos/{id}` retorna `204 No Content` quando o produto existe e é excluído
+- [x] Produto removido do PostgreSQL — `GET /produtos/{id}` retorna `404` após a exclusão
+- [x] `id` inexistente retorna `404 Not Found`
+- [x] Logs de acesso do produto no MongoDB **não** são excluídos (preservação de auditoria)
 
 ---
 
@@ -52,6 +52,6 @@ Os registros de `LogAcesso` referentes ao produto excluído permanecem no MongoD
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-001 com status `Done`
-- [ ] Cenário 2 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-001 com status `Done`
+- [x] Cenário 2 do PRD executado(s)

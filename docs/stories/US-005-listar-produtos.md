@@ -1,7 +1,7 @@
 # US-005 — Listar Produtos
 
 **Requisito:** [RF-005](../RULES.md#rf-005--listar-produtos)
-**Status:** In Progress
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
@@ -17,11 +17,11 @@
 
 ## Critérios de Aceite
 
-- [ ] `GET /produtos` retorna `200 OK` com array de produtos
-- [ ] Retorna array vazio `[]` quando não há produtos cadastrados — não retorna `404`
-- [ ] Após retornar a lista, um `LogAcesso` é criado no MongoDB com `operacao: LISTAGEM`
-- [ ] O log registra a operação mesmo quando a lista retornada é vazia
-- [ ] A criação do log **não** atrasa a resposta para o cliente
+- [x] `GET /produtos` retorna `200 OK` com array de produtos
+- [x] Retorna array vazio `[]` quando não há produtos cadastrados — não retorna `404`
+- [x] Após retornar a lista, um `LogAcesso` é criado no MongoDB com `operacao: LISTAGEM`
+- [x] O log registra a operação mesmo quando a lista retornada é vazia
+- [x] A criação do log **não** atrasa a resposta para o cliente
 
 ---
 
@@ -84,6 +84,6 @@ Content-Type: application/json
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-001 com status `Done`
-- [ ] Cenário 3 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-001 com status `Done`
+- [x] Cenário 3 do PRD executado(s)

@@ -1,7 +1,7 @@
 # US-004 — Consultar Produto
 
 **Requisito:** [RF-004](../RULES.md#rf-004--consultar-produto)
-**Status:** In Progress
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
@@ -17,11 +17,11 @@
 
 ## Critérios de Aceite
 
-- [ ] `GET /produtos/{id}` retorna `200 OK` com os dados do produto
-- [ ] `id` inexistente retorna `404 Not Found`
-- [ ] Após retornar o produto, um `LogAcesso` é criado no MongoDB com `operacao: CONSULTA`
-- [ ] A criação do log **não** atrasa a resposta para o cliente (assíncrono ou pós-resposta)
-- [ ] Falha ao gravar o log **não** causa erro na resposta do produto
+- [x] `GET /produtos/{id}` retorna `200 OK` com os dados do produto
+- [x] `id` inexistente retorna `404 Not Found`
+- [x] Após retornar o produto, um `LogAcesso` é criado no MongoDB com `operacao: CONSULTA`
+- [x] A criação do log **não** atrasa a resposta para o cliente (assíncrono ou pós-resposta)
+- [x] Falha ao gravar o log **não** causa erro na resposta do produto
 
 ---
 
@@ -73,6 +73,6 @@ Content-Type: application/json
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-001 com status `Done`
-- [ ] Cenário 2, Cenário 3 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-001 com status `Done`
+- [x] Cenário 2, Cenário 3 do PRD executado(s)
