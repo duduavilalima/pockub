@@ -8,7 +8,7 @@
 | [TDD-002](TDD-002-containerizacao.md)               | Containerização                 | Dockerfile multi-stage, build no daemon do Minikube, tags | [US-009](../stories/US-009-containerizar-api.md) | Done |
 | [TDD-003](TDD-003-infraestrutura-kubernetes.md)     | Infraestrutura Kubernetes       | Namespaces, Deployment, Services, Ingress, ConfigMaps, Secrets | [US-010](../stories/US-010-infraestrutura-kubernetes-base.md) | In Progress |
 | [TDD-004](TDD-004-persistencia.md)                  | Persistência                    | PostgreSQL StatefulSet, MongoDB StatefulSet, PV/PVC | [US-011](../stories/US-011-persistencia-statefulsets.md) | Done |
-| [TDD-005](TDD-005-escalabilidade-confiabilidade.md) | Escalabilidade e Confiabilidade | Probes, Resource Limits, HPA, Rolling Update, Rollback | [US-012](../stories/US-012-confiabilidade-escalabilidade.md) | Ready |
+| [TDD-005](TDD-005-escalabilidade-confiabilidade.md) | Escalabilidade e Confiabilidade | Probes, Resource Limits, HPA, Rolling Update, Rollback | [US-012](../stories/US-012-confiabilidade-escalabilidade.md) | Done |
 | [TDD-006](TDD-006-workloads-especiais.md)           | Workloads Especiais             | Job (seed), CronJob (limpeza), DaemonSet (log collector) | [US-013](../stories/US-013-workloads-operacionais.md) | Ready |
 | [TDD-007](TDD-007-observabilidade.md)               | Observabilidade                 | Actuator, Prometheus, Grafana, Metrics Server | [US-014](../stories/US-014-observabilidade.md) | Ready |
 | [TDD-008](TDD-008-helm.md)                          | Helm Chart                      | Chart structure, values.yaml, templates, ciclo de release | [US-015](../stories/US-015-helm-chart.md) | Ready |

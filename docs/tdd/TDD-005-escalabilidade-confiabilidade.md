@@ -1,6 +1,6 @@
 # TDD-005 — Escalabilidade e Confiabilidade
 
-**Status:** Ready
+**Status:** Done
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [ADR-001](../adr/ADR-001-minikube-local-cluster.md)
@@ -216,9 +216,9 @@ kubectl scale deployment product-api --replicas=1 -n learning-lab
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] Probes, requests e limits aplicados e verificados com `kubectl describe pod`
-- [ ] HPA com métrica `cpu` válida (não `<unknown>`) em `kubectl get hpa`
-- [ ] Cenários 6 a 10 do PRD executados (incluindo Rolling Update sem downtime e Rollback)
-- [ ] Arquivo `TDD-005-escalabilidade-confiabilidade_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-012)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] Probes, requests e limits aplicados e verificados com `kubectl describe pod`
+- [x] HPA com métrica `cpu` válida (não `<unknown>`) em `kubectl get hpa`
+- [x] Cenários 6 a 10 do PRD executados (incluindo Rolling Update sem downtime e Rollback)
+- [x] Arquivo `TDD-005-escalabilidade-confiabilidade_explain.md` gerado
+- [x] Estórias vinculadas atualizadas (US-012)
