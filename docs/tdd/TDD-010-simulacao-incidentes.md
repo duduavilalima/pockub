@@ -5,7 +5,7 @@
 **Data:** Novembro/2026
 **Referências:** [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [TDD-005](TDD-005-escalabilidade-confiabilidade.md) · [TDD-007](TDD-007-observabilidade.md) · [TDD-009](TDD-009-networkpolicy.md)
 **Estórias:** [US-017](../stories/US-017-simulacao-incidentes.md)
-**PRD:** [Fase 13 — Simulação de Incidentes](../PRD.md#fase-13--simulação-de-incidentes) · [Cenário 6 — Recuperação Automática de Pod](../PRD.md#cenário-6--recuperação-automática-de-pod) · [Cenário 8 — Horizontal Pod Autoscaler](../PRD.md#cenário-8--horizontal-pod-autoscaler) · [Cenário 10 — Rollback](../PRD.md#cenário-10--rollback) · [Cenário 18 — NetworkPolicy](../PRD.md#cenário-18--networkpolicy)
+**PRD:** [Fase 13 — Simulação de Incidentes](../PRD.md#fase-13--simulação-de-incidentes) · [Cenário 6 — Recuperação Automática de Pod](../PRD.md#cenário-6--recuperação-automática-de-pod) · [Cenário 8 — Horizontal Pod Autoscaler](../PRD.md#cenário-8--horizontal-pod-autoscaler) · [Cenário 9 — Rolling Update](../PRD.md#cenário-9--rolling-update) · [Cenário 10 — Rollback](../PRD.md#cenário-10--rollback) · [Cenário 18 — NetworkPolicy](../PRD.md#cenário-18--networkpolicy)
 
 ---
 
@@ -26,6 +26,41 @@ Runbook de incidentes simulados sobre a plataforma já implantada. Não cria nov
 | 5 | Banco indisponível | `kubectl scale statefulset postgresql --replicas=0 -n learning-lab` | Readiness da API falha; `/produtos` sem resposta | `kubectl get endpoints product-api`, `kubectl logs` da API | `kubectl scale ... --replicas=1`; dados preservados (PVC) |
 | 6 | Violação de NetworkPolicy | Teste de conexão bloqueado do [TDD-009 §5](TDD-009-networkpolicy.md) | Timeout na conexão | `kubectl describe networkpolicy`, `kubectl get pod --show-labels` | Ajustar labels/regras ou remover o cliente indevido (Cenário 18) |
 | 7 | Memória estourada | Reduzir `limits.memory` do Deployment para `128Mi` | `OOMKilled` e reinícios | `kubectl describe pod` (Last State), `kubectl top pods` | Restaurar o limite; revisar `MaxRAMPercentage` |
+| 8 | Rolling Update com perda de requisições | Loop de `curl` via Ingress durante `kubectl set image deployment/product-api product-api=product-api:1.1.0` (ver §2.1) | Algumas requisições com timeout/502 mesmo com `maxUnavailable: 0` (observado: 3 em 290 no TDD-005) | Contar códigos HTTP do loop; `kubectl get endpoints product-api -w` durante o rollout | Adicionar `preStop: sleep 5` ao container e reaplicar; repetir o loop e esperar 0 falhas |
+
+
+### 2.1 Incidente 8 — Rolling Update com perda de requisições
+
+Origem: [TDD-005 §7 e `_explain` §4](TDD-005-escalabilidade-confiabilidade_explain.md) — no Cenário 9, 3 de 290 requisições deram timeout.
+
+**Causa:** ao encerrar um Pod, o kubelet envia SIGTERM ao mesmo tempo em que o endpoint é removido do Service/Ingress. Até a remoção propagar, ainda chegam requisições a um Pod que já está terminando.
+
+**Reproduzir (antes):**
+
+```bash
+IP=$(minikube ip)
+while true; do curl -s -o /dev/null -m 2 -w "%{http_code}\n" -H "Host: product-api.local" $IP/produtos; sleep 0.3; done > codes.txt &
+kubectl set image deployment/product-api product-api=product-api:1.1.0 -n learning-lab
+kubectl rollout status deployment/product-api -n learning-lab
+kill %1; sort codes.txt | uniq -c      # procure 000/502/503
+```
+
+**Correção** (no container do Deployment, `k8s/deployments/product-api.yaml`):
+
+```yaml
+spec:
+  template:
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: product-api
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "5"]   # dá tempo de o endpoint sair do Service/Ingress antes do SIGTERM
+```
+
+O `exec` exige o binário `sleep` na imagem; se ela não o tiver, use a ação nativa `preStop.sleep: {seconds: 5}` (K8s ≥ 1.30). **Validar (depois):** repetir o loop e esperar somente `200`. Divergência no manifest é registrada aqui e refletida no TDD-003/TDD-005.
 
 ---
 
@@ -66,7 +101,7 @@ Fluxo sugerido: `get pods` (estado) → `describe` (eventos e motivo) → `logs`
 ## Definition of Done
 
 - [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] Incidentes 1 a 7 executados, com sintoma, diagnóstico e correção registrados
+- [ ] Incidentes 1 a 8 executados, com sintoma, diagnóstico e correção registrados
 - [ ] Estado base restaurado após cada incidente
 - [ ] Arquivo `TDD-010-simulacao-incidentes_explain.md` gerado
 - [ ] Estórias vinculadas atualizadas (US-017)

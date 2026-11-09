@@ -1174,6 +1174,7 @@ Objetivos:
 * Simular deploy com falha e executar Rollback
 * Simular sobrecarga e observar HPA em ação
 * Simular violação de NetworkPolicy
+* Reproduzir e eliminar perda de requisições durante o Rolling Update
 * Praticar troubleshooting com `kubectl describe`, `kubectl logs` e `kubectl events`
 
 Entregáveis:
