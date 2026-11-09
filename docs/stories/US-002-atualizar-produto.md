@@ -2,7 +2,7 @@
 
 **Requisito:** [RF-002](../RULES.md#rf-002--atualizar-produto)
 **Status:** In Progress
-**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos) · [RF-002 - Atualizar Produto](../PRD.md#rf-002---atualizar-produto)
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
 ---

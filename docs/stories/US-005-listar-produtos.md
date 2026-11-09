@@ -2,7 +2,7 @@
 
 **Requisito:** [RF-005](../RULES.md#rf-005--listar-produtos)
 **Status:** In Progress
-**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria) · [RF-005 - Listar Produtos](../PRD.md#rf-005---listar-produtos)
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
 ---

@@ -17,50 +17,15 @@ Define as estratégias de Health Checks (Probes), Resource Requests/Limits, Hori
 
 ## 2. Health Checks (Probes)
 
-Três probes são configurados no container da Product API, mapeados para os endpoints do Spring Actuator.
+Os três probes (startup, liveness e readiness) do container da Product API, mapeados para os endpoints do Spring Actuator, estão definidos no Deployment da Product API ([TDD-003 §5](TDD-003-infraestrutura-kubernetes.md)). Aqui, o comportamento:
 
-### 2.1 Startup Probe
+| Probe | Endpoint | Parâmetros | Efeito da falha |
+|-------|----------|------------|-----------------|
+| Startup | `/actuator/health/liveness` | `periodSeconds: 5`, `failureThreshold: 12` (tolerância de 60s) | Container reiniciado se não subir em 60s; enquanto roda, desativa liveness/readiness |
+| Liveness | `/actuator/health/liveness` | `periodSeconds: 10`, `failureThreshold: 3` | Container reiniciado (detecta travamento) |
+| Readiness | `/actuator/health/readiness` | `periodSeconds: 5`, `failureThreshold: 3` | Pod removido dos endpoints do Service, sem reiniciar |
 
-Aguarda o startup completo da JVM antes de ativar Liveness e Readiness.
-
-```yaml
-startupProbe:
-  httpGet:
-    path: /actuator/health/liveness
-    port: 8080
-  failureThreshold: 12
-  periodSeconds: 5
-```
-
-Tolerância máxima: `12 × 5s = 60s`. Se o container não responder em 60s, é reiniciado.
-
-### 2.2 Liveness Probe
-
-Detecta containers travados. Se falhar, o Pod é reiniciado.
-
-```yaml
-livenessProbe:
-  httpGet:
-    path: /actuator/health/liveness
-    port: 8080
-  periodSeconds: 10
-  failureThreshold: 3
-```
-
-### 2.3 Readiness Probe
-
-Controla se o Pod recebe tráfego do Service. Se falhar, o Pod é removido do endpoint do Service sem ser reiniciado.
-
-```yaml
-readinessProbe:
-  httpGet:
-    path: /actuator/health/readiness
-    port: 8080
-  periodSeconds: 5
-  failureThreshold: 3
-```
-
-### 2.4 Comportamento Combinado
+### 2.1 Comportamento Combinado
 
 ```
 Container inicia
@@ -77,31 +42,17 @@ Container inicia
 
 ## 3. Resource Requests e Limits
 
-### 3.1 Product API
+### 3.1 Valores adotados
 
-```yaml
-resources:
-  requests:
-    cpu: "250m"       # 0.25 vCPU garantido para scheduling
-    memory: "256Mi"
-  limits:
-    cpu: "500m"       # teto de 0.5 vCPU
-    memory: "512Mi"
-```
+Os manifests estão em [TDD-003 §5](TDD-003-infraestrutura-kubernetes.md) (API) e [TDD-004](TDD-004-persistencia.md) (bancos). Valores por container:
 
-### 3.2 PostgreSQL / MongoDB
+| Container | requests (cpu / memória) | limits (cpu / memória) |
+|-----------|--------------------------|------------------------|
+| Product API, PostgreSQL, MongoDB | `250m` / `256Mi` | `500m` / `512Mi` |
 
-```yaml
-resources:
-  requests:
-    cpu: "250m"
-    memory: "256Mi"
-  limits:
-    cpu: "500m"
-    memory: "512Mi"
-```
+`requests` é o que o scheduler reserva (0,25 vCPU garantido); `limits` é o teto aplicado em runtime (CPU é limitada; estourar memória causa `OOMKilled`).
 
-### 3.3 Por que requests são obrigatórios para o HPA
+### 3.2 Por que requests são obrigatórios para o HPA
 
 O HPA calcula o uso de CPU como percentual de `resources.requests.cpu`. Sem `requests` definido, o HPA não consegue calcular a métrica e permanece em estado `unknown`.
 
@@ -183,14 +134,7 @@ kubectl delete pod load-generator
 
 ### 5.1 Rolling Update (padrão)
 
-```yaml
-# Trecho do Deployment
-strategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 1        # até 1 Pod extra durante o update
-    maxUnavailable: 0  # nenhum Pod indisponível (zero downtime)
-```
+A estratégia está no Deployment ([TDD-003 §5](TDD-003-infraestrutura-kubernetes.md)): `RollingUpdate` com `maxSurge: 1` (até 1 Pod extra durante o update) e `maxUnavailable: 0` (nenhum Pod indisponível — zero downtime).
 
 **Fluxo:**
 ```
@@ -207,7 +151,7 @@ Réplicas: [v1.0.0] [v1.0.0]
 ```bash
 # Atualizar imagem
 kubectl set image deployment/product-api \
-  product-api=localhost:5000/product-api:1.1.0 \
+  product-api=product-api:1.1.0 \
   -n learning-lab
 
 # Monitorar
@@ -222,7 +166,7 @@ kubectl rollout history deployment/product-api -n learning-lab
 ```bash
 # Deploy de versão defeituosa
 kubectl set image deployment/product-api \
-  product-api=localhost:5000/product-api:1.0.0-broken \
+  product-api=product-api:1.0.0-broken \
   -n learning-lab
 
 # Rollback para versão anterior

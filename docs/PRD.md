@@ -194,38 +194,7 @@ Responsabilidades:
 
 # 4. Stack Tecnológica
 
-## Backend
-
-* Java 21
-* Spring Boot 4
-* Spring Data JPA
-* Spring Data MongoDB
-* Spring Actuator
-
-## Banco Relacional
-
-* PostgreSQL 17
-
-## Banco NoSQL
-
-* MongoDB
-
-## Build
-
-* Maven
-
-## Containers
-
-* Docker
-
-## Orquestração
-
-* Kubernetes
-* Minikube
-
-## Empacotamento
-
-* Helm
+Java 21, Spring Boot 4, PostgreSQL 17, MongoDB 7, Maven, Docker, Kubernetes/Minikube e Helm. Versões, papéis e ferramentas de observabilidade: [STACK.md](STACK.md).
 
 ---
 
@@ -305,144 +274,34 @@ Cliente → Ingress → Service (NodePort) → Product API → MongoDB
 
 ## Namespaces
 
-| Namespace | Conteúdo |
-|-----------|----------|
-| `learning-lab` | Product API, PostgreSQL, MongoDB, DaemonSet, Job, CronJob |
-| `monitoring` | Prometheus, Grafana |
-| `ingress-nginx` | Ingress Controller (criado pelo addon do Minikube) |
+Ver [ADR-005](adr/ADR-005-dual-namespace.md) (`learning-lab`, `monitoring` e `ingress-nginx`).
 
 ---
 
 # 6. Requisitos Funcionais
 
-## RF-001 - Criar Produto
+Contrato detalhado (endpoints, validações, status HTTP) em [RULES.md](RULES.md); cada requisito tem uma estória.
 
-O sistema deve permitir cadastrar produtos.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | POST | /produtos | `{ nome, descricao, preco, quantidadeEstoque }` | 201 / 400 |
-
-Validações: `nome` obrigatório (máx. 255 caracteres), `preco > 0`, `quantidadeEstoque >= 0`.
-
----
-
-## RF-002 - Atualizar Produto
-
-O sistema deve permitir atualizar produtos.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | PUT | /produtos/{id} | `{ nome, descricao, preco, quantidadeEstoque }` | 200 / 400 / 404 |
-
----
-
-## RF-003 - Excluir Produto
-
-O sistema deve permitir excluir produtos.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | DELETE | /produtos/{id} | - | 204 / 404 |
-
----
-
-## RF-004 - Consultar Produto
-
-O sistema deve permitir consultar um produto pelo identificador.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | GET | /produtos/{id} | - | 200 / 404 |
-
-Após a consulta, registra automaticamente um `LogAcesso` no MongoDB (RF-006).
-
----
-
-## RF-005 - Listar Produtos
-
-O sistema deve permitir listar todos os produtos.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | GET | /produtos | - | 200 |
-
-Após a listagem, registra automaticamente um `LogAcesso` no MongoDB (RF-006).
-
----
-
-## RF-006 - Registrar Log de Consulta
-
-Toda consulta de produto deve gerar automaticamente um registro no MongoDB com operação `CONSULTA` ou `LISTAGEM`.
-
-Esse RF é interno — não expõe endpoint próprio.
-
----
-
-## RF-007 - Consultar Logs
-
-O sistema deve permitir consultar todos os logs registrados.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | GET | /logs | - | 200 |
-
----
-
-## RF-008 - Filtrar Logs por Produto
-
-O sistema deve permitir consultar logs por produto.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | GET | /logs?produtoId={id} | - | 200 |
+| RF | Requisito | Estória |
+|----|-----------|---------|
+| [RF-001](RULES.md#rf-001--criar-produto) | Criar produto | [US-001](stories/US-001-criar-produto.md) |
+| [RF-002](RULES.md#rf-002--atualizar-produto) | Atualizar produto | [US-002](stories/US-002-atualizar-produto.md) |
+| [RF-003](RULES.md#rf-003--excluir-produto) | Excluir produto | [US-003](stories/US-003-excluir-produto.md) |
+| [RF-004](RULES.md#rf-004--consultar-produto) | Consultar produto (gera log) | [US-004](stories/US-004-consultar-produto.md) |
+| [RF-005](RULES.md#rf-005--listar-produtos) | Listar produtos (gera log) | [US-005](stories/US-005-listar-produtos.md) |
+| [RF-006](RULES.md#rf-006--registrar-log-de-consulta) | Registrar log de consulta (interno) | [US-006](stories/US-006-registrar-log-consulta.md) |
+| [RF-007](RULES.md#rf-007--consultar-logs) | Consultar logs | [US-007](stories/US-007-consultar-logs.md) |
+| [RF-008](RULES.md#rf-008--filtrar-logs-por-produto) | Filtrar logs por produto | [US-008](stories/US-008-filtrar-logs-produto.md) |
 
 ---
 
 # 7. Modelo de Dados
 
-## Produto (PostgreSQL)
-
-| Campo             | Tipo      | Restrições |
-| ----------------- | --------- | ---------- |
-| id                | Long      | PK, auto-increment |
-| nome              | String    | NOT NULL, máx 255 chars |
-| descricao         | String    | nullable |
-| preco             | Decimal   | NOT NULL, > 0 |
-| quantidadeEstoque | Integer   | NOT NULL, >= 0 |
-| dataCriacao       | Timestamp | NOT NULL, gerado automaticamente |
-| dataAtualizacao   | Timestamp | NOT NULL, atualizado automaticamente |
-
-Índices sugeridos: `nome` (busca futura).
-
----
-
-## LogAcesso (MongoDB — collection: `access_logs`)
-
-| Campo            | Tipo     | Restrições |
-| ---------------- | -------- | ---------- |
-| id               | String   | ObjectId, gerado automaticamente |
-| produtoId        | Long     | nullable — `null` para `LISTAGEM` |
-| nomeProduto      | String   | nullable — `null` para `LISTAGEM` |
-| operacao         | Enum     | `CONSULTA` \| `LISTAGEM` |
-| timestamp        | DateTime | NOT NULL, gerado automaticamente |
-| origemRequisicao | String   | IP do cliente da requisição |
-
-Índices: `produtoId` (para RF-008) e `timestamp` (para o CronJob de limpeza).
+`Produto` (PostgreSQL, tabela `produtos`) e `LogAcesso` (MongoDB, collection `access_logs`): campos, constraints, índices e mapeamento Java em [MODEL.md](MODEL.md).
 
 ---
 
 # 8. Arquitetura Kubernetes
-
-## Namespaces
-
-```text
-learning-lab   → aplicação (Product API, PostgreSQL, MongoDB, DaemonSet, Job, CronJob)
-monitoring     → observabilidade (Prometheus, Grafana)
-ingress-nginx  → Ingress Controller (addon do Minikube)
-```
-
----
 
 ## Componentes
 
@@ -465,7 +324,7 @@ ingress-nginx  → Ingress Controller (addon do Minikube)
 | Tipo      | StatefulSet                                                       |
 | Réplicas  | 1                                                                 |
 | Porta     | 5432                                                              |
-| Resources | requests: cpu=250m, memory=256Mi / limits: cpu=500m, memory=512Mi |
+| Resources | iguais aos da Product API |
 | Objetivo  | Persistência relacional                                           |
 
 ---
@@ -477,7 +336,7 @@ ingress-nginx  → Ingress Controller (addon do Minikube)
 | Tipo      | StatefulSet                                                       |
 | Réplicas  | 1                                                                 |
 | Porta     | 27017                                                             |
-| Resources | requests: cpu=250m, memory=256Mi / limits: cpu=500m, memory=512Mi |
+| Resources | iguais aos da Product API |
 | Objetivo  | Persistência NoSQL                                                |
 
 ---
@@ -1149,7 +1008,7 @@ Objetivos:
 
 * Desenvolver Product API (Java 21 + Spring Boot 4)
 * Dockerizar a aplicação
-* Publicar imagem no registry local do Minikube
+* Construir a imagem diretamente no daemon Docker do Minikube (`minikube docker-env`)
 
 Entregáveis:
 

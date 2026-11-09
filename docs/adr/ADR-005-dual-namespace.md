@@ -13,12 +13,13 @@ O projeto precisa decidir como organizar os recursos Kubernetes em namespaces. A
 
 ## Decisão
 
-Usar **dois namespaces**:
+Usar **dois namespaces próprios** (mais o `ingress-nginx` do addon):
 
 | Namespace | Conteúdo |
 |-----------|----------|
 | `learning-lab` | Product API, PostgreSQL, MongoDB, DaemonSet, Job, CronJob |
 | `monitoring` | Prometheus, Grafana |
+| `ingress-nginx` | Ingress Controller (criado pelo addon `ingress` do Minikube; não gerenciado por este projeto) |
 
 Justificativas:
 - Representa padrão corporativo real — times de platform/SRE gerenciam o namespace de monitoring separadamente

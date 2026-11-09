@@ -2,7 +2,7 @@
 
 **Requisito:** [RF-003](../RULES.md#rf-003--excluir-produto)
 **Status:** In Progress
-**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos) · [RF-003 - Excluir Produto](../PRD.md#rf-003---excluir-produto)
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
 ---

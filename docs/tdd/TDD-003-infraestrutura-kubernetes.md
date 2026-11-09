@@ -106,6 +106,8 @@ data:
 
 ## 5. Deployment — Product API
 
+> Este é o manifest de referência da Product API: probes, resources e estratégia de deploy são definidos **aqui**. O [TDD-005](TDD-005-escalabilidade-confiabilidade.md) explica o comportamento de cada um sem repetir o YAML.
+
 ```yaml
 # k8s/deployments/product-api.yaml
 apiVersion: apps/v1
@@ -118,6 +120,11 @@ metadata:
     version: "1.0.0"
 spec:
   replicas: 1
+  strategy:                 # detalhes em TDD-005 §5
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: product-api
@@ -150,7 +157,7 @@ spec:
               memory: "32Mi"
       containers:
         - name: product-api
-          image: localhost:5000/product-api:1.0.0
+          image: product-api:1.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -233,30 +240,7 @@ spec:
   type: ClusterIP
 ```
 
-### NodePort — Product API (acesso externo direto)
-
-Usado nas fases iniciais, antes do Ingress.
-
-```yaml
-# k8s/services/product-api-nodeport.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: product-api-nodeport
-  namespace: learning-lab
-spec:
-  selector:
-    app: product-api
-  ports:
-    - port: 80
-      targetPort: 8080
-      nodePort: 30080
-  type: NodePort
-```
-
-Acesso: `http://$(minikube ip):30080`
-
-### ClusterIP — Product API (usado pelo Ingress)
+### Product API — um único Service
 
 ```yaml
 # k8s/services/product-api-service.yaml
@@ -271,8 +255,14 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
-  type: ClusterIP
+      nodePort: 30080     # remover junto com `type: NodePort` na Fase 8
+  type: NodePort          # Fases 3–7: acesso direto; Fase 8: trocar para ClusterIP
 ```
+
+Um Service `NodePort` já inclui um ClusterIP, então o mesmo `product-api:80` atende o Ingress, o Prometheus e os Jobs. Não é preciso um segundo Service.
+
+- **Fases 3 a 7:** acesso direto em `http://$(minikube ip):30080`.
+- **Fase 8 (Ingress):** altere para `type: ClusterIP`, remova `nodePort` e reaplique — o Ingress passa a ser a única porta de entrada (demonstra a substituição do NodePort pelo Ingress).
 
 ---
 

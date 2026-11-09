@@ -82,6 +82,7 @@ pockub/
 |----------------|-----------------------------------------------------------|
 | `learning-lab` | Product API, PostgreSQL, MongoDB, DaemonSet, Job, CronJob |
 | `monitoring`   | Prometheus, Grafana                                       |
+| `ingress-nginx`| Ingress Controller (addon do Minikube)                    |
 
 ---
 
@@ -114,15 +115,7 @@ Detalhes, constraints e mapeamento Java: [`docs/MODEL.md`](docs/MODEL.md)
 
 ## Decisões de Arquitetura (ADRs)
 
-| ADR                                                   | Decisão                                        |
-|-------------------------------------------------------|------------------------------------------------|
-| [ADR-001](docs/adr/ADR-001-minikube-local-cluster.md) | Minikube como cluster local                    |
-| [ADR-002](docs/adr/ADR-002-java-spring-boot.md)       | Java 21 e Spring Boot 4                        |
-| [ADR-003](docs/adr/ADR-003-postgresql-relacional.md)  | PostgreSQL para persistência relacional        |
-| [ADR-004](docs/adr/ADR-004-mongodb-nosql.md)          | MongoDB para logs de acesso                    |
-| [ADR-005](docs/adr/ADR-005-dual-namespace.md)         | Dois namespaces: `learning-lab` e `monitoring` |
-| [ADR-006](docs/adr/ADR-006-statefulset-databases.md)  | StatefulSet para bancos de dados               |
-| [ADR-007](docs/adr/ADR-007-prometheus-grafana.md)     | Prometheus e Grafana para observabilidade      |
+Sete ADRs em [`docs/adr/`](docs/adr/) (índice em [`docs/PRD.md`](docs/PRD.md#adrs)): Minikube, Java/Spring Boot 4, PostgreSQL, MongoDB, dois namespaces, StatefulSet para bancos e Prometheus/Grafana.
 
 ---
 
@@ -178,7 +171,7 @@ Detalhes, constraints e mapeamento Java: [`docs/MODEL.md`](docs/MODEL.md)
 # Iniciar cluster
 # --cni=calico é necessário para a NetworkPolicy ser aplicada (Fase 11)
 minikube start --memory=6144 --cpus=4 --cni=calico
-minikube addons enable ingress metrics-server registry
+minikube addons enable ingress metrics-server
 
 # Aplicar namespace
 kubectl apply -f k8s/namespace/

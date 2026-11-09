@@ -82,26 +82,22 @@ target/
 
 ---
 
-## 5. Build e Push da Imagem
+## 5. Build da Imagem
 
-### Uso com Minikube Registry
+### Build direto no daemon do Minikube
 
-O Minikube expõe um registry local na porta `5000`. Para evitar pull de imagem externa durante os estudos:
+`eval $(minikube docker-env)` aponta o `docker` local para o daemon Docker de dentro do Minikube. A imagem construída já fica disponível para o kubelet — não há registry, `docker push` nem pull externo:
 
 ```bash
-# Habilitar o addon
-minikube addons enable registry
-
-# Apontar o Docker local para o registry do Minikube
 eval $(minikube docker-env)
 
-# Build direto no contexto do Minikube
-docker build -t localhost:5000/product-api:1.0.0 \
-  application/product-api/
+docker build -t product-api:1.0.0 application/product-api/
 
-# Push para o registry do Minikube
-docker push localhost:5000/product-api:1.0.0
+# Conferir
+docker images product-api
 ```
+
+> Alternativa descartada: addon `registry` + `docker push localhost:5000/...`. Exige um passo extra e, no driver Docker em Linux, port-forward para o registry ser alcançável do host; não agrega ao aprendizado desta POC.
 
 ### Convenção de Tags
 
@@ -121,7 +117,7 @@ A tag da imagem é independente da `<version>` do `pom.xml` (`0.0.1-SNAPSHOT`): 
 imagePullPolicy: IfNotPresent
 ```
 
-Com o Minikube registry local, `IfNotPresent` evita tentativas de pull externo e funciona sem credenciais de registry.
+Como a imagem existe apenas no daemon do Minikube, `IfNotPresent` (ou `Never`) é obrigatório: `Always` tentaria um pull que falharia, pois a imagem não está em nenhum registry.
 
 ---
 
@@ -174,7 +170,7 @@ Detalhes: [TDD-003](TDD-003-infraestrutura-kubernetes.md)
 
 - [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
 - [ ] `docker build` conclui e a imagem `product-api:1.0.0` sobe com usuário não-root
-- [ ] Imagem acessível pelo cluster (build no daemon do Minikube ou registry)
+- [ ] Imagem construída no daemon do Minikube e visível em `docker images` após `eval $(minikube docker-env)`
 - [ ] Tamanho final da imagem conferido com `docker images`
 - [ ] Arquivo `TDD-002-containerizacao_explain.md` gerado
 - [ ] Estórias vinculadas atualizadas (US-009)

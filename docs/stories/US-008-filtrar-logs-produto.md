@@ -2,7 +2,7 @@
 
 **Requisito:** [RF-008](../RULES.md#rf-008--filtrar-logs-por-produto)
 **Status:** In Progress
-**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria) · [RF-008 - Filtrar Logs por Produto](../PRD.md#rf-008---filtrar-logs-por-produto)
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
 ---

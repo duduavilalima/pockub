@@ -82,7 +82,7 @@ maintainers:
 # Product API
 productApi:
   image:
-    repository: localhost:5000/product-api
+    repository: product-api
     tag: "1.0.0"
     pullPolicy: IfNotPresent
   replicas: 1
@@ -97,7 +97,7 @@ productApi:
     type: ClusterIP
     port: 80
     targetPort: 8080
-  nodePort: 30080
+  nodePort: 30080   # usado quando service.type=NodePort (Fases 3–7); com Ingress o padrão é ClusterIP
 
 # Ingress
 ingress:

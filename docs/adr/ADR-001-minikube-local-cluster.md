@@ -13,7 +13,7 @@ As alternativas avaliadas foram:
 
 | Opção | Prós | Contras |
 |-------|------|---------|
-| **Minikube** | Instalação simples, addons prontos (Ingress, Metrics Server, Registry), maturidade | Single-node |
+| **Minikube** | Instalação simples, addons prontos (Ingress, Metrics Server), maturidade | Single-node |
 | kind | Leve, multi-node simulado via Docker | Addons menos plug-and-play |
 | k3s | Próximo de produção, leve | Configuração mais manual |
 | EKS/GKE/AKS | Ambiente real de produção | Custo, dependência de conta cloud |
@@ -25,7 +25,7 @@ As alternativas avaliadas foram:
 Usar **Minikube** como cluster local.
 
 Justificativas:
-- Addons `ingress`, `metrics-server` e `registry` habilitáveis com um comando (`minikube addons enable`)
+- Addons `ingress` e `metrics-server` habilitáveis com um comando (`minikube addons enable`)
 - Documentação extensa e comunidade ativa
 - Foco do projeto é aprender K8s, não operar o cluster em si
 - Sem custo e sem dependência de conta cloud

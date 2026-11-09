@@ -2,7 +2,7 @@
 
 **Requisito:** [RF-006](../RULES.md#rf-006--registrar-log-de-consulta)
 **Status:** In Progress
-**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria) · [RF-006 - Registrar Log de Consulta](../PRD.md#rf-006---registrar-log-de-consulta)
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
 ---
