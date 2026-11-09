@@ -1,7 +1,7 @@
 # US-009 — Containerizar a Product API
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Ready
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 1 — Deploy Completo da Plataforma](../PRD.md#cenário-1--deploy-completo-da-plataforma)
 **TDD:** [TDD-002](../tdd/TDD-002-containerizacao.md)
 
@@ -17,10 +17,10 @@
 
 ## Critérios de Aceite
 
-- [ ] `docker build` multi-stage conclui sem erro a partir de `application/product-api/`
-- [ ] Imagem final contém apenas JRE e o JAR, e executa com usuário não-root
-- [ ] Imagem versionada com tag explícita (`1.0.0`); `latest` não é usada nos manifests
-- [ ] Imagem acessível pelo cluster Minikube com `imagePullPolicy: IfNotPresent`
+- [x] `docker build` multi-stage conclui sem erro a partir de `application/product-api/`
+- [x] Imagem final contém apenas JRE e o JAR, e executa com usuário não-root
+- [x] Imagem versionada com tag explícita (`1.0.0`); `latest` não é usada nos manifests
+- [x] Imagem acessível pelo cluster Minikube com `imagePullPolicy: IfNotPresent`
 
 
 ---
@@ -34,6 +34,6 @@
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-002 com status `Done`
-- [ ] Cenário 1 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-002 com status `Done`
+- [x] Cenário 1 do PRD executado(s) *(parte da Fase 2: imagem disponível no cluster; o deploy completo segue nas Fases 3+)*
