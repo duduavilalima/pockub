@@ -1,6 +1,6 @@
 # TDD-001 — Product API
 
-**Status:** In Progress
+**Status:** Done
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [STACK.md](../STACK.md) · [RULES.md](../RULES.md) · [MODEL.md](../MODEL.md) · [ADR-002](../adr/ADR-002-java-spring-boot.md)
@@ -225,6 +225,9 @@ public record ProdutoResponse(
 |---------|------------|---------|
 | `ProdutoNotFoundException` | 404 | `Produto {id} não encontrado` |
 | `MethodArgumentNotValidException` | 400 | lista de erros de validação |
+| `MethodArgumentTypeMismatchException` | 400 | `Valor inválido para o parâmetro '{nome}'` (ex.: `produtoId=abc`) |
+| `HttpMessageNotReadableException` | 400 | JSON malformado |
+| `NoResourceFoundException` | 404 | `Recurso não encontrado` (rota inexistente) |
 | `Exception` (catch-all) | 500 | mensagem genérica |
 
 `GlobalExceptionHandler` via `@RestControllerAdvice` — resposta padronizada em JSON.
@@ -370,7 +373,11 @@ Regra geral e ferramentas em [CLAUDE.md](../../CLAUDE.md#estratégia-de-testes) 
 | | `produtoId` não numérico → `400` | W |
 | | Funciona com produto já excluído | I |
 
-**Divergência conhecida (a resolver ao implementar os testes):** os critérios de `400` para `produtoId` não numérico (US-008, RF-008) e para id inválido em `/produtos/{id}` exigem tratar `MethodArgumentTypeMismatchException` no `GlobalExceptionHandler`. Hoje esse erro cai no handler genérico e responde `500`; o mesmo vale para JSON malformado e rota inexistente. Ao corrigir, atualizar a seção 8.
+**Divergências resolvidas na implementação dos testes:**
+
+1. `MethodArgumentTypeMismatchException` (id/`produtoId` não numérico), JSON malformado e rota inexistente caíam no handler genérico e respondiam `500`; agora respondem `400`/`400`/`404` (seção 8 atualizada).
+2. `PUT /produtos/{id}` devolvia `dataAtualizacao` antiga: o `@UpdateTimestamp` só é aplicado no flush (commit), depois de a resposta ser montada. `ProdutoService.atualizar` passou a usar `saveAndFlush`.
+3. O Flyway nunca executava (`missing table [produtos]`): no Spring Boot 4 a auto-configuração vive em `spring-boot-flyway`, e o `pom.xml` só tinha `flyway-core`. Trocado por `spring-boot-starter-flyway` (+ `flyway-database-postgresql`).
 
 Os testes de integração compartilham um único par de containers por execução (contêineres reutilizados entre classes) para manter a suíte rápida.
 
@@ -385,9 +392,9 @@ Os testes de integração compartilham um único par de containers por execuçã
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] Suíte `./mvnw test` verde, com PostgreSQL e MongoDB disponíveis
-- [ ] Cada critério de aceite de US-001 a US-008 coberto por teste automatizado
-- [ ] Cenários 2 e 3 do PRD executados com `curl` (ver `_explain`)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] Suíte `./mvnw test` verde, com PostgreSQL e MongoDB disponíveis
+- [x] Cada critério de aceite de US-001 a US-008 coberto por teste automatizado
+- [x] Cenários 2 e 3 do PRD executados com `curl` (ver `_explain`)
 - [x] Arquivo `TDD-001-product-api_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-001, US-002, US-003, US-004, US-005, US-006, US-007, US-008)
+- [x] Estórias vinculadas atualizadas (US-001, US-002, US-003, US-004, US-005, US-006, US-007, US-008)

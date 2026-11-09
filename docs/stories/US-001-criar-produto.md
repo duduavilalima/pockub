@@ -1,7 +1,7 @@
 # US-001 — Criar Produto
 
 **Requisito:** [RF-001](../RULES.md#rf-001--criar-produto)
-**Status:** In Progress
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
@@ -17,13 +17,13 @@
 
 ## Critérios de Aceite
 
-- [ ] `POST /produtos` com body válido retorna `201 Created` e o produto criado com `id` gerado
-- [ ] Produto persistido no PostgreSQL e recuperável via `GET /produtos/{id}`
-- [ ] `nome` ausente retorna `400 Bad Request`
-- [ ] `nome` em branco ou com mais de 255 caracteres retorna `400 Bad Request`
-- [ ] `preco <= 0` retorna `400 Bad Request`
-- [ ] `quantidadeEstoque < 0` retorna `400 Bad Request`
-- [ ] `dataCriacao` e `dataAtualizacao` preenchidos automaticamente
+- [x] `POST /produtos` com body válido retorna `201 Created` e o produto criado com `id` gerado
+- [x] Produto persistido no PostgreSQL e recuperável via `GET /produtos/{id}`
+- [x] `nome` ausente retorna `400 Bad Request`
+- [x] `nome` em branco ou com mais de 255 caracteres retorna `400 Bad Request`
+- [x] `preco <= 0` retorna `400 Bad Request`
+- [x] `quantidadeEstoque < 0` retorna `400 Bad Request`
+- [x] `dataCriacao` e `dataAtualizacao` preenchidos automaticamente
 
 ---
 
@@ -70,6 +70,6 @@ Content-Type: application/json
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-001 com status `Done`
-- [ ] Cenário 2 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-001 com status `Done`
+- [x] Cenário 2 do PRD executado(s)

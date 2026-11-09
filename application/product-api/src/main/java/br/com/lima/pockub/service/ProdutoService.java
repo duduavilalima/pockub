@@ -35,7 +35,8 @@ public class ProdutoService {
     public ProdutoResponse atualizar(Long id, ProdutoRequest request) {
         Produto produto = buscarOuLancar(id);
         aplicarDados(produto, request);
-        return ProdutoResponse.from(produtoRepository.save(produto));
+        // saveAndFlush: o @UpdateTimestamp só é aplicado no flush; sem ele a resposta sairia com a data antiga
+        return ProdutoResponse.from(produtoRepository.saveAndFlush(produto));
     }
 
     @Transactional

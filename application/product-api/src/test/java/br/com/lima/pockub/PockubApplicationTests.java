@@ -1,10 +1,10 @@
 package br.com.lima.pockub;
 
+import br.com.lima.pockub.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class PockubApplicationTests {
+/** Sobe o contexto completo: Flyway aplica V1 e o Hibernate valida o schema (ddl-auto: validate). */
+class PockubApplicationTests extends AbstractIntegrationTest {
 
 	@Test
 	void contextLoads() {

@@ -1,7 +1,7 @@
 # US-008 — Filtrar Logs por Produto
 
 **Requisito:** [RF-008](../RULES.md#rf-008--filtrar-logs-por-produto)
-**Status:** In Progress
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
@@ -17,12 +17,12 @@
 
 ## Critérios de Aceite
 
-- [ ] `GET /logs?produtoId={id}` retorna `200 OK` com logs filtrados pelo produto
-- [ ] Retorna array vazio `[]` quando não há logs para o produto — não retorna `404`
-- [ ] Logs ordenados por `timestamp` decrescente
-- [ ] Logs de `LISTAGEM` (sem `produtoId`) **não** aparecem no filtro por produto
-- [ ] `produtoId` inválido (não numérico) retorna `400 Bad Request`
-- [ ] Funciona mesmo se o produto tiver sido excluído do PostgreSQL (logs são imutáveis)
+- [x] `GET /logs?produtoId={id}` retorna `200 OK` com logs filtrados pelo produto
+- [x] Retorna array vazio `[]` quando não há logs para o produto — não retorna `404`
+- [x] Logs ordenados por `timestamp` decrescente
+- [x] Logs de `LISTAGEM` (sem `produtoId`) **não** aparecem no filtro por produto
+- [x] `produtoId` inválido (não numérico) retorna `400 Bad Request`
+- [x] Funciona mesmo se o produto tiver sido excluído do PostgreSQL (logs são imutáveis)
 
 ---
 
@@ -74,6 +74,6 @@ O segundo log mostra `nomeProduto: "Teclado Mecânico"` (nome anterior) — evid
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-001 com status `Done`
-- [ ] Cenário 3 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-001 com status `Done`
+- [x] Cenário 3 do PRD executado(s)

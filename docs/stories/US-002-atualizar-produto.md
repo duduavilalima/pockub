@@ -1,7 +1,7 @@
 # US-002 — Atualizar Produto
 
 **Requisito:** [RF-002](../RULES.md#rf-002--atualizar-produto)
-**Status:** In Progress
+**Status:** Done
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 2 — CRUD de Produtos](../PRD.md#cenário-2--crud-de-produtos)
 **TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
@@ -17,12 +17,12 @@
 
 ## Critérios de Aceite
 
-- [ ] `PUT /produtos/{id}` com body válido retorna `200 OK` e o produto atualizado
-- [ ] `dataAtualizacao` atualizado automaticamente após cada alteração
-- [ ] `dataCriacao` **não** é alterado
-- [ ] `id` inexistente retorna `404 Not Found`
-- [ ] Validações de `nome`, `preco` e `quantidadeEstoque` idênticas ao RF-001
-- [ ] Alteração persistida no PostgreSQL
+- [x] `PUT /produtos/{id}` com body válido retorna `200 OK` e o produto atualizado
+- [x] `dataAtualizacao` atualizado automaticamente após cada alteração
+- [x] `dataCriacao` **não** é alterado
+- [x] `id` inexistente retorna `404 Not Found`
+- [x] Validações de `nome`, `preco` e `quantidadeEstoque` idênticas ao RF-001
+- [x] Alteração persistida no PostgreSQL
 
 ---
 
@@ -69,6 +69,6 @@ Content-Type: application/json
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-001 com status `Done`
-- [ ] Cenário 2 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-001 com status `Done`
+- [x] Cenário 2 do PRD executado(s)
