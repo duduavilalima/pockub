@@ -1,9 +1,9 @@
 # TDD-006 — Workloads Especiais
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Junho/2026
-**Referências:** [PRD — Seção 9](../PRD.md) · [TDD-003](TDD-003-infraestrutura-kubernetes.md)
+**Referências:** [PRD — Fase 9](../PRD.md#fase-9--operação) · [TDD-003](TDD-003-infraestrutura-kubernetes.md)
 **Estórias:** [US-013](../stories/US-013-workloads-operacionais.md)
 **PRD:** [Fase 9 — Operação](../PRD.md#fase-9--operação) · [Cenário 14 — Job (Seed de Dados)](../PRD.md#cenário-14--job-seed-de-dados) · [Cenário 15 — CronJob (Limpeza de Logs)](../PRD.md#cenário-15--cronjob-limpeza-de-logs) · [Cenário 16 — DaemonSet (Log Collector)](../PRD.md#cenário-16--daemonset-log-collector)
 

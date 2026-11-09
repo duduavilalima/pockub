@@ -1,7 +1,7 @@
 # US-013 — Executar workloads operacionais (Job, CronJob, DaemonSet)
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Draft
+**Status:** Ready
 **PRD:** [Fase 9 — Operação](../PRD.md#fase-9--operação) · [Cenário 14 — Job (Seed de Dados)](../PRD.md#cenário-14--job-seed-de-dados) · [Cenário 15 — CronJob (Limpeza de Logs)](../PRD.md#cenário-15--cronjob-limpeza-de-logs) · [Cenário 16 — DaemonSet (Log Collector)](../PRD.md#cenário-16--daemonset-log-collector)
 **TDD:** [TDD-006](../tdd/TDD-006-workloads-especiais.md)
 

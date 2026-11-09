@@ -1,7 +1,7 @@
 # US-015 — Empacotar a plataforma em Helm Chart
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Draft
+**Status:** Ready
 **PRD:** [Fase 12 — Helm](../PRD.md#fase-12--helm)
 **TDD:** [TDD-008](../tdd/TDD-008-helm.md)
 

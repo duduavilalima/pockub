@@ -1,7 +1,7 @@
 # US-011 — Persistir dados com StatefulSets
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Draft
+**Status:** Ready
 **PRD:** [Fase 4 — Persistência](../PRD.md#fase-4--persistência) · [Cenário 4 — Persistência PostgreSQL](../PRD.md#cenário-4--persistência-postgresql) · [Cenário 5 — Persistência MongoDB](../PRD.md#cenário-5--persistência-mongodb)
 **TDD:** [TDD-004](../tdd/TDD-004-persistencia.md)
 

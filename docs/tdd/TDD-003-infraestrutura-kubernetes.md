@@ -1,6 +1,6 @@
 # TDD-003 — Infraestrutura Kubernetes Base
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [ADR-001](../adr/ADR-001-minikube-local-cluster.md) · [ADR-005](../adr/ADR-005-dual-namespace.md) · [TDD-004](TDD-004-persistencia.md) · [TDD-005](TDD-005-escalabilidade-confiabilidade.md)

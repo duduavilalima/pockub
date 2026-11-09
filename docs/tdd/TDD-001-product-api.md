@@ -345,5 +345,5 @@ V1__create_produtos_table.sql
 - [ ] Suíte `./mvnw test` verde, com PostgreSQL e MongoDB disponíveis
 - [ ] Cada critério de aceite de US-001 a US-008 coberto por teste automatizado
 - [ ] Cenários 2 e 3 do PRD executados com `curl` (ver `_explain`)
-- [ ] Arquivo `TDD-001-product-api_explain.md` gerado
+- [x] Arquivo `TDD-001-product-api_explain.md` gerado
 - [ ] Estórias vinculadas atualizadas (US-001, US-002, US-003, US-004, US-005, US-006, US-007, US-008)

@@ -1,6 +1,6 @@
 # TDD-008 — Helm Chart
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [STACK.md](../STACK.md) · [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [TDD-004](TDD-004-persistencia.md) · [TDD-007](TDD-007-observabilidade.md) · [TDD-009](TDD-009-networkpolicy.md)

@@ -1,7 +1,7 @@
 # US-009 — Containerizar a Product API
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Draft
+**Status:** Ready
 **PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 1 — Deploy Completo da Plataforma](../PRD.md#cenário-1--deploy-completo-da-plataforma)
 **TDD:** [TDD-002](../tdd/TDD-002-containerizacao.md)
 

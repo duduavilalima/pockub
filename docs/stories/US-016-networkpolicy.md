@@ -1,7 +1,7 @@
 # US-016 — Isolar os bancos com NetworkPolicy
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Draft
+**Status:** Ready
 **PRD:** [Fase 11 — Segurança de Rede](../PRD.md#fase-11--segurança-de-rede) · [Cenário 18 — NetworkPolicy](../PRD.md#cenário-18--networkpolicy)
 **TDD:** [TDD-009](../tdd/TDD-009-networkpolicy.md)
 

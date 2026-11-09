@@ -1,6 +1,6 @@
 # TDD-010 — Simulação de Incidentes
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Novembro/2026
 **Referências:** [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [TDD-005](TDD-005-escalabilidade-confiabilidade.md) · [TDD-007](TDD-007-observabilidade.md) · [TDD-009](TDD-009-networkpolicy.md)

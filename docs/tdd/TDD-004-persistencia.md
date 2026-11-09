@@ -1,6 +1,6 @@
 # TDD-004 — Persistência
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [MODEL.md](../MODEL.md) · [ADR-003](../adr/ADR-003-postgresql-relacional.md) · [ADR-004](../adr/ADR-004-mongodb-nosql.md) · [ADR-006](../adr/ADR-006-statefulset-databases.md)

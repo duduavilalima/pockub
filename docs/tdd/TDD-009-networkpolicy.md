@@ -1,6 +1,6 @@
 # TDD-009 — NetworkPolicy
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Novembro/2026
 **Referências:** [ADR-005](../adr/ADR-005-dual-namespace.md) · [TDD-004](TDD-004-persistencia.md) · [TDD-006](TDD-006-workloads-especiais.md)

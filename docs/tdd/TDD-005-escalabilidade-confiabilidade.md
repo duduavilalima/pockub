@@ -1,6 +1,6 @@
 # TDD-005 — Escalabilidade e Confiabilidade
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [ADR-001](../adr/ADR-001-minikube-local-cluster.md)

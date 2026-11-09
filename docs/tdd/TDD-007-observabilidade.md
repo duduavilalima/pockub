@@ -1,6 +1,6 @@
 # TDD-007 — Observabilidade
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [ADR-007](../adr/ADR-007-prometheus-grafana.md) · [ADR-005](../adr/ADR-005-dual-namespace.md) · [TDD-001](TDD-001-product-api.md)

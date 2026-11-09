@@ -1,7 +1,7 @@
 # US-014 — Observar a plataforma com Prometheus e Grafana
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Draft
+**Status:** Ready
 **PRD:** [Fase 10 — Observabilidade Avançada](../PRD.md#fase-10--observabilidade-avançada) · [Cenário 13 — Observabilidade](../PRD.md#cenário-13--observabilidade)
 **TDD:** [TDD-007](../tdd/TDD-007-observabilidade.md)
 

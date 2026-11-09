@@ -1,6 +1,6 @@
 # TDD-002 — Containerização
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [TDD-001](TDD-001-product-api.md) · [ADR-002](../adr/ADR-002-java-spring-boot.md)

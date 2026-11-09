@@ -1,7 +1,7 @@
 # US-012 — Garantir confiabilidade e escalabilidade da API
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Draft
+**Status:** Ready
 **PRD:** [Fase 6 — Confiabilidade](../PRD.md#fase-6--confiabilidade) · [Fase 7 — Escalabilidade](../PRD.md#fase-7--escalabilidade) · [Cenário 6 — Recuperação Automática de Pod](../PRD.md#cenário-6--recuperação-automática-de-pod) · [Cenário 7 — Escalabilidade Manual](../PRD.md#cenário-7--escalabilidade-manual) · [Cenário 8 — Horizontal Pod Autoscaler](../PRD.md#cenário-8--horizontal-pod-autoscaler) · [Cenário 9 — Rolling Update](../PRD.md#cenário-9--rolling-update) · [Cenário 10 — Rollback](../PRD.md#cenário-10--rollback)
 **TDD:** [TDD-005](../tdd/TDD-005-escalabilidade-confiabilidade.md)
 
