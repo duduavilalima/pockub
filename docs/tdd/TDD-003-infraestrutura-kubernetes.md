@@ -266,6 +266,23 @@ Um Service `NodePort` já inclui um ClusterIP, então o mesmo `product-api:80` a
 
 ---
 
+### LoadBalancer (demonstração opcional)
+
+O Minikube simula `type: LoadBalancer` com `minikube tunnel`. Sem criar um segundo manifest:
+
+```bash
+kubectl expose deployment product-api --type=LoadBalancer --name=product-api-lb \
+  --port=80 --target-port=8080 -n learning-lab
+
+# em outro terminal (mantém o túnel aberto)
+minikube tunnel
+
+kubectl get svc product-api-lb -n learning-lab   # EXTERNAL-IP deixa de ser <pending>
+kubectl delete svc product-api-lb -n learning-lab
+```
+
+---
+
 ## 7. Ingress
 
 Requer addon `ingress` habilitado: `minikube addons enable ingress`
@@ -333,6 +350,8 @@ Externo
 ---
 
 ## 10. Ordem de Aplicação dos Manifests
+
+> **Fases do roadmap × ordem:** a Product API precisa de ConfigMap, Secret e bancos para iniciar (o Flyway conecta no startup). Aplicar só o Deployment na Fase 3 faz o Pod entrar em `CrashLoopBackOff` (ou ficar preso no `initContainer`) até as Fases 4 e 5 — comportamento útil para praticar `kubectl describe` e `kubectl logs --previous`, mas não é falha do manifest. Para um deploy limpo, siga a ordem abaixo.
 
 ```bash
 # 1. Namespaces

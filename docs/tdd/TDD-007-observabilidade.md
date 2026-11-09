@@ -46,8 +46,7 @@ management:
       show-details: always
   metrics:
     tags:
-      application: product-api
-      namespace: learning-lab
+      application: product-api   # namespace/pod vêm do service discovery do Prometheus (relabel), não do app
 ```
 
 ### 2.3 Endpoints Disponíveis
@@ -97,6 +96,9 @@ rules:
   - apiGroups: [""]
     resources: ["nodes", "pods", "services", "endpoints"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes/proxy", "nodes/metrics"]   # scrape do cAdvisor via API server
+    verbs: ["get"]
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get"]
@@ -155,6 +157,25 @@ data:
             target_label: __address__
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+
+      # CPU/memória por container (cAdvisor, embutido no kubelet) — base do painel "CPU e Memória dos Pods"
+      - job_name: 'kubernetes-cadvisor'
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
 ```
 
 ### 3.3 Deployment
@@ -179,7 +200,7 @@ spec:
       serviceAccountName: prometheus
       containers:
         - name: prometheus
-          image: prom/prometheus:v2.51.0
+          image: prom/prometheus:v3.5.0
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.retention.time=7d"
@@ -239,7 +260,21 @@ data:
         isDefault: true
 ```
 
-### 4.2 Deployment
+### 4.2 Secret — senha do admin
+
+```yaml
+# monitoring/grafana/grafana-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-secret
+  namespace: monitoring
+type: Opaque
+stringData:
+  admin-password: admin     # apenas para estudo — troque fora do ambiente de estudo
+```
+
+### 4.3 Deployment
 
 ```yaml
 # monitoring/grafana/grafana-deployment.yaml
@@ -260,12 +295,15 @@ spec:
     spec:
       containers:
         - name: grafana
-          image: grafana/grafana:10.4.0
+          image: grafana/grafana:12.0.0
           ports:
             - containerPort: 3000
           env:
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "admin"          # apenas para estudo
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: admin-password
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
           resources:
@@ -324,7 +362,7 @@ minikube service grafana -n monitoring --url
 |-----------|-----|---------|
 | JVM Micrometer | `4701` | Heap, GC, Threads, CPU |
 | Spring Boot Statistics | `6756` | HTTP requests, error rate |
-| Kubernetes Cluster | `6417` | CPU/Memória dos nodes e pods |
+| Painel próprio (CPU/Memória dos Pods) | — | Construído com as queries de cAdvisor da seção 6.2; dashboards de cluster prontos (ex.: 6417) exigem também kube-state-metrics/node-exporter, que não são implantados |
 
 ### 6.2 Queries PromQL Úteis
 
@@ -339,6 +377,12 @@ histogram_quantile(0.99,
 
 # Uso de memória JVM
 jvm_memory_used_bytes{application="product-api", area="heap"}
+
+# CPU por Pod (cAdvisor)
+sum(rate(container_cpu_usage_seconds_total{namespace="learning-lab", container!=""}[5m])) by (pod)
+
+# Memória por Pod (cAdvisor)
+sum(container_memory_working_set_bytes{namespace="learning-lab", container!=""}) by (pod)
 
 # Conexões ativas no pool JDBC
 hikaricp_connections_active{application="product-api"}
@@ -392,7 +436,7 @@ Product API
 |------|---------|
 | Prometheus sem PVC | Dados de métricas perdidos ao reiniciar o Pod — adequado para estudo, mas adicionar PVC para persistência em uso contínuo |
 | RBAC cross-namespace | O `kubernetes_sd_configs` precisa listar Pods em `learning-lab`: ClusterRole (ou Role no namespace alvo) — em produção restringir ao namespace específico |
-| Grafana admin/admin | Senha padrão apenas para estudo — alterar via Secret em ambientes reais |
+| Grafana admin/admin | A senha vem do Secret `grafana-secret` (não mais do manifest), mas o valor continua `admin` — apenas para estudo; em ambientes reais use Sealed Secrets/External Secrets |
 | Memória do Minikube | Prometheus + Grafana + aplicação somam ~1.5GB de requests — iniciar Minikube com `--memory=6144 --cpus=4` (o HPA pode chegar a 5 réplicas de 250m) |
 | `retention.time=7d` | Retenção de 7 dias suficiente para estudo sem estourar disco |
 

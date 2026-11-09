@@ -81,9 +81,9 @@ Fase do PRD → Estórias → TDDs. Regras e DoR/DoD em [CLAUDE.md](../CLAUDE.md
 | [Fase 8 — Exposição Externa](#fase-8--exposição-externa) | [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | [TDD-003](tdd/TDD-003-infraestrutura-kubernetes.md) |
 | [Fase 9 — Operação](#fase-9--operação) | [US-013](stories/US-013-workloads-operacionais.md) | [TDD-006](tdd/TDD-006-workloads-especiais.md) |
 | [Fase 10 — Observabilidade Avançada](#fase-10--observabilidade-avançada) | [US-014](stories/US-014-observabilidade.md) | [TDD-007](tdd/TDD-007-observabilidade.md) |
-| [Fase 11 — Segurança de Rede](#fase-11--segurança-de-rede) | [US-016](stories/US-016-networkpolicy.md) | a criar |
+| [Fase 11 — Segurança de Rede](#fase-11--segurança-de-rede) | [US-016](stories/US-016-networkpolicy.md) | [TDD-009](tdd/TDD-009-networkpolicy.md) |
 | [Fase 12 — Helm](#fase-12--helm) | [US-015](stories/US-015-helm-chart.md) | [TDD-008](tdd/TDD-008-helm.md) |
-| [Fase 13 — Simulação de Incidentes](#fase-13--simulação-de-incidentes) | [US-017](stories/US-017-simulacao-incidentes.md) | a criar |
+| [Fase 13 — Simulação de Incidentes](#fase-13--simulação-de-incidentes) | [US-017](stories/US-017-simulacao-incidentes.md) | [TDD-010](tdd/TDD-010-simulacao-incidentes.md) |
 | [Fase 14 — Terraform *(opcional — pós-POC)*](#fase-14--terraform-opcional--pós-poc) | — (opcional, fora do escopo da POC) | — |
 
 ---
@@ -467,6 +467,10 @@ Comunicação interna entre Pods (API → PostgreSQL, API → MongoDB).
 
 Exposição da API externamente durante os estudos (antes do Ingress).
 
+### LoadBalancer (simulado)
+
+Demonstração opcional com `minikube tunnel` ([TDD-003 §6](tdd/TDD-003-infraestrutura-kubernetes.md)).
+
 ---
 
 ## Ingress
@@ -822,11 +826,11 @@ Validação:
 
 ## Cenário 11 — ConfigMap
 
-Ação: Alterar um valor no ConfigMap e aplicar com `kubectl apply`.
+Ação: Alterar um valor no ConfigMap, aplicar com `kubectl apply` e reiniciar o Deployment com `kubectl rollout restart deployment/product-api -n learning-lab` (variáveis de ambiente injetadas por `envFrom` só são lidas na criação do Pod).
 
 Validação:
 
-* Nova configuração propagada para os Pods
+* Nova configuração propagada para os Pods recriados
 * Comportamento da aplicação reflete a mudança
 
 ---
@@ -866,12 +870,12 @@ Validação:
 
 ## Cenário 15 — CronJob (Limpeza de Logs)
 
-Ação: Disparar o CronJob manualmente com `kubectl create job --from=cronjob/log-cleanup`.
+Ação: Inserir um log antigo no MongoDB (ex.: `db.access_logs.insertOne({operacao:"CONSULTA", timestamp:new Date(Date.now()-40*864e5)})` via `mongosh`) e disparar o CronJob manualmente com `kubectl create job --from=cronjob/log-cleanup`.
 
 Validação:
 
 * Job criado e executado com sucesso
-* Logs com mais de 30 dias removidos do MongoDB
+* O log inserido (40 dias) é removido; logs recentes permanecem
 
 ---
 
@@ -882,7 +886,7 @@ Ação: Inspecionar o DaemonSet com `kubectl get daemonset -n learning-lab`.
 Validação:
 
 * Um Pod do DaemonSet em execução por node do cluster
-* Logs dos containers coletados e disponíveis
+* `kubectl logs` do Pod do DaemonSet mostra os logs dos containers da Product API no node (coleta simulada com `tail` sobre `hostPath`)
 
 ---
 
@@ -976,7 +980,7 @@ A POC será considerada concluída quando:
 | Rollback funcionando | `kubectl rollout undo` restaura versão anterior em < 60s |
 | Health Checks funcionando | Pod removido do Service durante falha de Readiness |
 | Escalabilidade manual | `kubectl scale` cria/remove réplicas conforme esperado |
-| HPA funcionando | Escala de 1 para N réplicas com CPU > 50% por 30s |
+| HPA funcionando | Escala de 1 para N réplicas quando a CPU média passa de 50% dos `requests` (`kubectl get hpa`) |
 | Prometheus coletando métricas | Target `product-api` com status `UP` no Prometheus UI |
 | Grafana exibindo dashboards | Métricas de JVM e HTTP visíveis em tempo real |
 | Job concluindo | Status `Complete` após seed de dados |
@@ -1023,6 +1027,8 @@ Objetivos:
 * Criar Deployment para Product API
 * Criar Service (NodePort)
 * Verificar ReplicaSet criado automaticamente
+
+Nota: sem ConfigMap, Secret e bancos (Fases 4 e 5) o Pod da API não chega a `Ready` — o `CrashLoopBackOff` é esperado e útil para praticar troubleshooting. Ver [TDD-003 §10](tdd/TDD-003-infraestrutura-kubernetes.md).
 
 Entregáveis:
 

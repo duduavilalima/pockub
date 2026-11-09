@@ -3,7 +3,7 @@
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
 **Status:** Draft
 **PRD:** [Fase 13 — Simulação de Incidentes](../PRD.md#fase-13--simulação-de-incidentes) · [Cenário 6 — Recuperação Automática de Pod](../PRD.md#cenário-6--recuperação-automática-de-pod) · [Cenário 8 — Horizontal Pod Autoscaler](../PRD.md#cenário-8--horizontal-pod-autoscaler) · [Cenário 10 — Rollback](../PRD.md#cenário-10--rollback) · [Cenário 18 — NetworkPolicy](../PRD.md#cenário-18--networkpolicy)
-**TDD:** a criar
+**TDD:** [TDD-010](../tdd/TDD-010-simulacao-incidentes.md)
 
 ---
 
@@ -30,10 +30,10 @@
 - [x] Estória no formato Como/quero/para
 - [x] Critérios de aceite verificáveis
 - [x] Referências ao PRD (Fase e Cenário) preenchidas
-- [ ] TDD associado identificado (a criar)
+- [x] TDD associado identificado
 
 ## Definition of Done
 
 - [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD correspondente criado e com status `Done`
+- [ ] TDD-010 com status `Done`
 - [ ] Cenário 6, Cenário 8, Cenário 10, Cenário 18 do PRD executado(s)

@@ -32,7 +32,8 @@ metadata:
   namespace: learning-lab
 spec:
   backoffLimit: 3          # máximo de 3 tentativas em caso de falha
-  ttlSecondsAfterFinished: 300  # remove o Job 5 min após conclusão
+  activeDeadlineSeconds: 600    # aborta se a API não ficar pronta em 10 min
+  # sem ttlSecondsAfterFinished: o Job permanece para `kubectl get job` / `kubectl logs`
   template:
     spec:
       restartPolicy: OnFailure
@@ -46,6 +47,9 @@ spec:
               until wget -q -O- http://product-api/actuator/health/readiness; do
                 echo "aguardando API..."; sleep 3
               done
+          resources:
+            requests: {cpu: "10m", memory: "16Mi"}
+            limits: {cpu: "50m", memory: "32Mi"}
       containers:
         - name: seed
           image: curlimages/curl:8.6.0
@@ -53,6 +57,12 @@ spec:
             - sh
             - -c
             - |
+              set -e
+              # idempotente: não insere de novo se já existirem produtos
+              if curl -sf http://product-api/produtos | grep -q '"id"'; then
+                echo "Produtos já existem — seed ignorado."; exit 0
+              fi
+
               curl -sf -X POST http://product-api/produtos \
                 -H "Content-Type: application/json" \
                 -d '{"nome":"Teclado Mecânico","descricao":"Cherry MX","preco":299.90,"quantidadeEstoque":15}'
@@ -66,6 +76,9 @@ spec:
                 -d '{"nome":"Monitor 4K","descricao":"27 polegadas","preco":1499.90,"quantidadeEstoque":8}'
 
               echo "Seed concluído com sucesso."
+          resources:
+            requests: {cpu: "10m", memory: "16Mi"}
+            limits: {cpu: "50m", memory: "32Mi"}
 ```
 
 ### 2.3 Execução e Verificação
@@ -137,6 +150,9 @@ spec:
                     timestamp: { $lt: limite }
                   });
                   print("Logs removidos:", result.deletedCount);
+              resources:
+                requests: {cpu: "50m", memory: "64Mi"}
+                limits: {cpu: "200m", memory: "256Mi"}
 ```
 
 ### 3.3 Execução Manual (para demonstração)
@@ -204,10 +220,8 @@ spec:
             - -c
             - |
               echo "Log collector iniciado no node: $NODE_NAME"
-              while true; do
-                echo "[$(date)] coletando logs do node $NODE_NAME"
-                sleep 30
-              done
+              # coleta simulada: acompanha (tail) os logs dos containers da Product API no node
+              exec tail -F /var/log/containers/product-api-*.log
           env:
             - name: NODE_NAME
               valueFrom:
@@ -249,7 +263,7 @@ kubectl logs -l app=log-collector -n learning-lab -f
 
 ### 4.4 Comportamento no Minikube
 
-O Minikube tem apenas 1 node — o DaemonSet cria exatamente 1 Pod. Em clusters com múltiplos nodes, seriam criados N Pods (1 por node), incluindo control-plane se o `toleration` estiver configurado.
+O Minikube tem apenas 1 node — o DaemonSet cria exatamente 1 Pod. Em clusters com múltiplos nodes, seriam criados N Pods (1 por node), incluindo control-plane por causa da `toleration`. O "coletor" apenas faz `tail` dos logs dos containers da API (via `hostPath: /var/log`) para demonstrar o padrão; um agente real (Fluent Bit, Promtail) seguiria o mesmo desenho de DaemonSet + hostPath.
 
 ---
 
@@ -269,11 +283,11 @@ O Minikube tem apenas 1 node — o DaemonSet cria exatamente 1 Pod. Em clusters 
 
 | Item | Detalhe |
 |------|---------|
-| Job idempotente | O seed verifica se os produtos já existem antes de inserir (evitar duplicatas ao re-executar) |
+| Job idempotente | O script consulta `GET /produtos` e sai sem inserir se já houver produtos (note que essa consulta também gera um `LogAcesso`) |
 | CronJob timezone | Por padrão usa UTC — ajustar `timeZone: "America/Sao_Paulo"` se necessário (K8s 1.27+) |
-| DaemonSet em control-plane | O `toleration` é necessário no Minikube pois o único node é também control-plane |
+| DaemonSet em control-plane | A `toleration` só tem efeito se o node tiver o taint `control-plane`; no Minikube de 1 node normalmente não há taint, e ela fica como exemplo para clusters multi-node |
 | NetworkPolicy (Fase 11) | O CronJob conecta direto no MongoDB; a policy de isolamento do banco deve permitir Pods com `app: log-cleanup` além da `product-api` |
-| `ttlSecondsAfterFinished` | Limpa Jobs concluídos automaticamente — sem isso, Jobs `Complete` acumulam no namespace |
+| `ttlSecondsAfterFinished` | Omitido de propósito no seed, para que o Job e seus logs continuem disponíveis nas verificações; em uso real, defina (ex.: `3600`) para limpar Jobs concluídos |
 
 
 ---

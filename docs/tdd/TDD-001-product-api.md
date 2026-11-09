@@ -248,9 +248,11 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
-  data:
-    mongodb:
-      uri: ${MONGO_URI}
+  mongodb:
+    uri: ${MONGO_URI}   # Spring Boot 4: spring.data.mongodb.uri foi removida (erro de deprecação)
+  threads:
+    virtual:
+      enabled: true     # Tomcat em Virtual Threads (ADR-002); o @Async usa pool próprio
 
 management:
   endpoints:
@@ -261,7 +263,10 @@ management:
     health:
       probes:
         enabled: true
-      show-details: always
+      show-details: always  # apenas estudo; em produção, when-authorized
+  metrics:
+    tags:
+      application: product-api
 ```
 
 Variáveis de ambiente injetadas via ConfigMap e Secret do Kubernetes (ver [TDD-003](TDD-003-infraestrutura-kubernetes.md)).
@@ -320,6 +325,7 @@ V1__create_produtos_table.sql
 |------|---------|
 | Startup lento da JVM | `startupProbe` com `failureThreshold: 12` e `periodSeconds: 5` (60s total) |
 | Falha no MongoDB | Log assíncrono com tratamento silencioso — não derruba a API |
+| `show-details: always` | Expõe detalhes de DB/Mongo em `/actuator/health` sem autenticação — aceitável só no estudo; use `when-authorized` fora dele |
 | Thread pool `@Async` | Monitorar saturação da fila via métricas do Actuator em carga alta |
 | `ddl-auto: validate` | O Flyway roda no startup da API antes do Hibernate validar; basta o PostgreSQL estar acessível — por isso o Deployment usa um `initContainer` que aguarda a porta 5432 (ver [TDD-004](TDD-004-persistencia.md)) |
 

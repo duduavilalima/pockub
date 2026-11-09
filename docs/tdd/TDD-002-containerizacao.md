@@ -63,8 +63,10 @@ COPY --from=builder /build/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
 ```
+
+`-XX:MaxRAMPercentage=75.0` faz o heap respeitar o limite do container (512Mi → ~384MB). Sem a flag, a JVM usaria só 25% do limite (~128MB) como heap máximo.
 
 ---
 
@@ -108,6 +110,25 @@ A tag da imagem é independente da `<version>` do `pom.xml` (`0.0.1-SNAPSHOT`): 
 | `1.0.0` | versão estável para demonstrações |
 | `1.0.0-broken` | versão defeituosa para o cenário de Rollback |
 | `latest` | não usar em manifests K8s — sem rastreabilidade |
+
+### Gerando as imagens dos cenários 9 e 10
+
+```bash
+eval $(minikube docker-env)
+
+# 1.1.0 — nova versão para o Rolling Update (Cenário 9).
+# Para uma mudança real, altere o código e rode o build com -t product-api:1.1.0;
+# para só exercitar o rollout, basta uma nova tag da mesma imagem:
+docker tag product-api:1.0.0 product-api:1.1.0
+
+# 1.0.0-broken — imagem que falha ao subir (Cenário 10)
+docker build -t product-api:1.0.0-broken - <<'EOF'
+FROM product-api:1.0.0
+ENTRYPOINT ["sh", "-c", "echo 'falha intencional'; exit 1"]
+EOF
+```
+
+Com `maxUnavailable: 0`, os Pods da versão boa continuam atendendo enquanto o novo Pod entra em `CrashLoopBackOff`; `kubectl rollout undo` encerra o deploy defeituoso.
 
 ---
 
@@ -154,7 +175,7 @@ Detalhes: [TDD-003](TDD-003-infraestrutura-kubernetes.md)
 | Cache de dependências Maven | A separação do `COPY pom.xml` + `dependency:go-offline` antes do `COPY src/` garante reuso do cache quando apenas o código muda |
 | Usuário não-root | Obrigatório em clusters com `PodSecurity` — boa prática mesmo no Minikube |
 | `imagePullPolicy: Always` | Não usar no ambiente de estudo — força pull externo desnecessário |
-| JVM flags | Para containers pequenos, considerar `-XX:MaxRAMPercentage=75.0` para limitar heap ao container |
+| JVM flags | `-XX:MaxRAMPercentage=75.0` já está no `ENTRYPOINT`; ajuste junto com os `limits` de memória |
 
 
 ---

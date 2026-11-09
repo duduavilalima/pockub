@@ -13,9 +13,14 @@ spring:
       ddl-auto: validate
     show-sql: false
     open-in-view: false
+  mongodb:
+    uri: ${MONGO_URI}
   data:
     mongodb:
-      uri: ${MONGO_URI}
+      auto-index-creation: true   # cria os @Indexed de LogAcesso (default do Spring Data é false)
+  threads:
+    virtual:
+      enabled: true
 
 management:
   endpoints:
@@ -26,4 +31,7 @@ management:
     health:
       probes:
         enabled: true
-      show-details: always
+      show-details: always  # apenas estudo; em produção, when-authorized
+  metrics:
+    tags:
+      application: product-api

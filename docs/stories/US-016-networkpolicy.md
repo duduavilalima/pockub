@@ -3,7 +3,7 @@
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
 **Status:** Draft
 **PRD:** [Fase 11 — Segurança de Rede](../PRD.md#fase-11--segurança-de-rede) · [Cenário 18 — NetworkPolicy](../PRD.md#cenário-18--networkpolicy)
-**TDD:** a criar
+**TDD:** [TDD-009](../tdd/TDD-009-networkpolicy.md)
 
 ---
 
@@ -30,10 +30,10 @@
 - [x] Estória no formato Como/quero/para
 - [x] Critérios de aceite verificáveis
 - [x] Referências ao PRD (Fase e Cenário) preenchidas
-- [ ] TDD associado identificado (a criar)
+- [x] TDD associado identificado
 
 ## Definition of Done
 
 - [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD correspondente criado e com status `Done`
+- [ ] TDD-009 com status `Done`
 - [ ] Cenário 18 do PRD executado(s)

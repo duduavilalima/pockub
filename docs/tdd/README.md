@@ -12,6 +12,8 @@
 | [TDD-006](TDD-006-workloads-especiais.md)           | Workloads Especiais             | Job (seed), CronJob (limpeza), DaemonSet (log collector) | [US-013](../stories/US-013-workloads-operacionais.md) | Draft |
 | [TDD-007](TDD-007-observabilidade.md)               | Observabilidade                 | Actuator, Prometheus, Grafana, Metrics Server | [US-014](../stories/US-014-observabilidade.md) | Draft |
 | [TDD-008](TDD-008-helm.md)                          | Helm Chart                      | Chart structure, values.yaml, templates, ciclo de release | [US-015](../stories/US-015-helm-chart.md) | Draft |
+| [TDD-009](TDD-009-networkpolicy.md) | NetworkPolicy | Isolamento de PostgreSQL e MongoDB, CNI Calico | [US-016](../stories/US-016-networkpolicy.md) | Draft |
+| [TDD-010](TDD-010-simulacao-incidentes.md) | Simulação de Incidentes | Runbook de falhas, rollback, troubleshooting | [US-017](../stories/US-017-simulacao-incidentes.md) | Draft |
 
 ---
 
@@ -24,6 +26,9 @@ TDD-001 (API)
                       ├──► TDD-004 (Persistência)
                       ├──► TDD-005 (Escalabilidade)
                       ├──► TDD-006 (Workloads especiais)
-                      └──► TDD-007 (Observabilidade)
+                      ├──► TDD-007 (Observabilidade)
+                      └──► TDD-009 (NetworkPolicy; libera o CronJob do TDD-006)
                                └──► TDD-008 (Helm — empacota tudo)
+
+TDD-010 (Incidentes) — runbook sobre a plataforma completa (TDD-003 a TDD-009)
 ```

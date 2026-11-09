@@ -43,7 +43,7 @@ pockub/
 │   ├── RULES.md               ← requisitos funcionais e contrato de API
 │   ├── MODEL.md               ← modelo de dados (PostgreSQL + MongoDB)
 │   ├── adr/                   ← Architecture Decision Records
-│   ├── tdd/                   ← Technical Design Documents (TDD-001 a TDD-008)
+│   ├── tdd/                   ← Technical Design Documents (TDD-001 a TDD-010)
 │   └── stories/               ← estórias de usuário
 │
 ├── application/
@@ -171,7 +171,9 @@ Sete ADRs em [`docs/adr/`](docs/adr/) (índice em [`docs/PRD.md`](docs/PRD.md#ad
 # Iniciar cluster
 # --cni=calico é necessário para a NetworkPolicy ser aplicada (Fase 11)
 minikube start --memory=6144 --cpus=4 --cni=calico
-minikube addons enable ingress metrics-server
+# Addons (habilite conforme a fase)
+minikube addons enable metrics-server   # Fase 7 (HPA, kubectl top)
+minikube addons enable ingress          # Fase 8
 
 # Aplicar namespace
 kubectl apply -f k8s/namespace/

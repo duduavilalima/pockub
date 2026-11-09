@@ -35,7 +35,7 @@
 | `service/ProdutoService.java`                          | CRUD completo + orquestra o disparo de logs                                 |
 | `controller/ProdutoController.java`                    | 5 endpoints REST para `/produtos`                                           |
 | `controller/LogAcessoController.java`                  | 1 endpoint REST `/logs` com filtro opcional por `produtoId`                 |
-| `resources/application.yaml`                           | Configuração externalizada via variáveis de ambiente                        |
+| `resources/application.yaml`                           | Configuração externalizada via variáveis de ambiente (`DB_*`, `MONGO_URI`)  |
 | `resources/db/migration/V1__create_produtos_table.sql` | Criação da tabela `produtos` com constraints e índice em `nome`             |
 
 ---
@@ -49,16 +49,25 @@ Records são imutáveis por natureza, eliminam boilerplate de `equals/hashCode/t
 Marcar a classe com `readOnly = true` e sobrescrever apenas os métodos de escrita com `@Transactional` simples é o padrão recomendado: o Spring repassa a hint ao driver JDBC, potencialmente reduzindo lock overhead no PostgreSQL. Os métodos de escrita (`criar`, `atualizar`, `excluir`) sobrescrevem o padrão com a anotação sem `readOnly`.
 
 ### `@Async` no LogAcessoService com falha silenciosa
-A gravação de log não deve bloquear a resposta ao cliente nem derrubar a API caso o MongoDB esteja indisponível. O `@Async` despacha a gravação para o thread pool `log-async-`, e qualquer exceção é capturada e logada sem propagação — conforme especificado no TDD-001 seção 5.2.
+A gravação de log não deve bloquear a resposta ao cliente nem derrubar a API caso o MongoDB esteja indisponível. O `@Async` despacha a gravação para o pool `taskExecutor` (threads com prefixo `log-async-`), e qualquer exceção é capturada e logada sem propagação — conforme especificado no TDD-001 seção 5.2.
+
+O `timestamp` e a origem são capturados **antes** do disparo assíncrono (`ProdutoService` chama `LocalDateTime.now()` e recebe o IP do controller), porque o `@Async` pode atrasar a execução se a fila encher e o `HttpServletRequest` não deve ser usado em outra thread. Assim o log registra o momento real da operação (US-006).
 
 ### `@Indexed` em `LogAcesso.produtoId` e `timestamp`
 - `produtoId`: suporta o filtro `GET /logs?produtoId={id}` (RF-008)
 - `timestamp`: suporta a query de limpeza do CronJob (Fase 9/TDD-006)
 
-Os índices são criados pelo Spring Data MongoDB no startup quando `spring.data.mongodb.auto-index-creation=true` (default em dev). Em produção, criar os índices via migration ou script separado é mais seguro.
+O Spring Data MongoDB **não** cria os índices por padrão (`auto-index-creation` é `false`). Por isso o `application.yaml` define `spring.data.mongodb.auto-index-creation: true`; sem isso os `@Indexed` seriam ignorados, e o filtro por `produtoId` e a limpeza do CronJob fariam varredura completa da collection. Em produção, criar os índices via script separado é mais seguro.
+
+### `spring.mongodb.uri` (e não `spring.data.mongodb.uri`)
+No Spring Boot 4 a propriedade `spring.data.mongodb.uri` foi removida (erro de deprecação, substituída por `spring.mongodb.uri`). Com a chave antiga a API ignoraria `MONGO_URI` e conectaria em `localhost`. A opção `auto-index-creation` continua em `spring.data.mongodb`.
+
+### Virtual Threads e `forward-headers-strategy`
+- `spring.threads.virtual.enabled: true` coloca o Tomcat em Virtual Threads, cumprindo a justificativa do ADR-002. O pool do `@Async` segue sendo um `ThreadPoolTaskExecutor` próprio, com tamanho limitado, para controlar a pressão sobre o MongoDB.
+- `server.forward-headers-strategy: native` faz o `getRemoteAddr()` devolver o IP real do cliente atrás do Ingress (`X-Forwarded-For`); sem isso o log registraria o IP do controller.
 
 ### Flyway com `ddl-auto: validate`
-O Hibernate valida o schema existente mas não o cria ou altera. Isso força o uso do Flyway como única fonte de verdade para mudanças de schema, prevenindo divergências entre ambientes. Em Kubernetes, o Flyway roda no startup da aplicação, portanto o PostgreSQL deve estar disponível antes do Pod ficar `Ready` (controlado pelo `readinessProbe`).
+O Hibernate valida o schema existente mas não o cria ou altera. Isso força o uso do Flyway como única fonte de verdade para mudanças de schema, prevenindo divergências entre ambientes. Em Kubernetes, o Flyway roda no startup da aplicação, portanto o PostgreSQL precisa estar acessível **antes de a API iniciar** (garantido pelo `initContainer` no Kubernetes); o `readinessProbe` só decide quando o Pod recebe tráfego, não ordena o startup.
 
 ### `open-in-view: false`
 Desabilita o padrão "Open Session in View" do Spring MVC, que mantém a conexão JDBC aberta durante toda a renderização HTTP. Em APIs REST isso só aumenta o consumo de conexões sem benefício.
@@ -87,19 +96,18 @@ Poderia-se criar dois endpoints distintos (ex: `/logs` e `/logs/produto/{id}`). 
 ## 4. Pontos de atenção
 
 ### Ordem de startup no Kubernetes
-O Flyway roda no startup da aplicação e tenta conectar ao PostgreSQL. Se o Pod da API subir antes do PostgreSQL estar `Ready`, o startup falha. Soluções:
-1. `initContainer` que aguarda o PostgreSQL
-2. `startupProbe` com `failureThreshold` alto (conforme TDD-001 seção 12)
-3. `depends_on` no Helm (via hooks)
+O Flyway roda no startup da aplicação e tenta conectar ao PostgreSQL. Se o Pod da API subir antes do PostgreSQL estar `Ready`, o startup falha. Solução adotada: um `initContainer` `wait-for-postgres` no Deployment (TDD-003 §5 e TDD-004 §3.3), que bloqueia o início da API até a porta 5432 responder.
+
+O que **não** resolve: a `startupProbe` só tolera um startup *lento* (JVM subindo); se o Flyway falha, o processo encerra e o container reinicia (`CrashLoopBackOff`), então aumentar o `failureThreshold` não ajuda. O Helm também não tem `depends_on` — a ordem entre recursos não é garantida, e a espera continua sendo feita pelo `initContainer` (hooks do Helm servem para Jobs de pré/pós-instalação, não para ordenar Deployments).
 
 ### `data_atualizacao` no PostgreSQL
 O Flyway cria a coluna com `DEFAULT now()`, mas a atualização automática precisa ser feita via `@UpdateTimestamp` do Hibernate — diferente do MySQL/MariaDB, o PostgreSQL não tem `ON UPDATE CURRENT_TIMESTAMP` nativo. Isso está correto: o Hibernate gerencia via `@UpdateTimestamp`.
 
 ### Thread pool do `@Async`
-O bean `taskExecutor` configurado no `AsyncConfig` usa o nome `log-async-`. O Spring `@Async` busca o bean por tipo (`Executor`) — se houver múltiplos beans `Executor` no contexto, especifique o nome explicitamente com `@Async("taskExecutor")`.
+O bean do `AsyncConfig` se chama `taskExecutor`; `log-async-` é apenas o **prefixo do nome das threads** (aparece nos logs e em thread dumps). O `@Async` sem argumento usa o `Executor` do contexto (o bean `taskExecutor`). Se surgirem outros beans `Executor`, indique o pool explicitamente com `@Async("taskExecutor")`.
 
 ### `produtoId` null para LISTAGEM
-O campo `produtoId` em `LogAcesso` é `null` para operações `LISTAGEM`. O MongoDB armazena sem problema. A consulta `findByProdutoIdOrderByTimestampDesc` com `produtoId=null` retornaria logs de LISTAGEM, o que não é o comportamento esperado para `GET /logs?produtoId={id}`. Como `produtoId` no request param sempre será um `Long` não-nulo (a conversão falha antes), isso não é um problema prático.
+O campo `produtoId` em `LogAcesso` é `null` para operações `LISTAGEM` (o MODEL.md o define como nullable). Essa decisão é o que garante que os logs de LISTAGEM **não** apareçam em `GET /logs?produtoId={id}`: o `produtoId` do request é sempre um `Long` não-nulo (um valor não numérico gera `400` antes de chegar ao repository), então `findByProdutoIdOrderByTimestampDesc(1)` nunca casa com documentos de `produtoId = null`. Atenção: uma futura chamada interna com `produtoId = null` retornaria exatamente os logs de LISTAGEM.
 
 ---
 
@@ -118,8 +126,8 @@ Esperado: `BUILD SUCCESS`
 
 ```bash
 export DB_URL=jdbc:postgresql://localhost:5432/pockub
-export DB_USERNAME=postgres
-export DB_PASSWORD=postgres
+export DB_USERNAME=pockub
+export DB_PASSWORD=pockub123   # mesmos valores do Secret do cluster (TDD-003)
 export MONGO_URI=mongodb://localhost:27017/pockub
 
 ./mvnw spring-boot:run

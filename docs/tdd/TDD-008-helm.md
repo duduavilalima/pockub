@@ -3,7 +3,7 @@
 **Status:** Draft
 **Versão:** 1.0
 **Data:** Junho/2026
-**Referências:** [STACK.md](../STACK.md) · [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [TDD-004](TDD-004-persistencia.md) · [TDD-007](TDD-007-observabilidade.md)
+**Referências:** [STACK.md](../STACK.md) · [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [TDD-004](TDD-004-persistencia.md) · [TDD-007](TDD-007-observabilidade.md) · [TDD-009](TDD-009-networkpolicy.md)
 **Estórias:** [US-015](../stories/US-015-helm-chart.md)
 **PRD:** [Fase 12 — Helm](../PRD.md#fase-12--helm)
 
@@ -29,6 +29,7 @@ helm/kubernetes-learning-lab/
     ├── service.yaml
     ├── ingress.yaml
     ├── hpa.yaml
+    ├── networkpolicies.yaml      ← isolamento dos bancos (TDD-009)
     ├── postgresql/
     │   ├── statefulset.yaml
     │   └── service.yaml
@@ -164,6 +165,10 @@ logCleanup:
 logCollector:
   enabled: true
 
+# NetworkPolicy (requer CNI com suporte, ex.: minikube start --cni=calico)
+networkPolicy:
+  enabled: true
+
 # Observabilidade
 monitoring:
   enabled: true
@@ -171,14 +176,14 @@ monitoring:
   prometheus:
     image:
       repository: prom/prometheus
-      tag: "v2.51.0"
+      tag: "v3.5.0"
     retention: "7d"
     nodePort: 30090
   grafana:
     image:
       repository: grafana/grafana
-      tag: "10.4.0"
-    adminPassword: admin
+      tag: "12.0.0"
+    adminPassword: admin   # vira o Secret grafana-secret
     nodePort: 30300
 ```
 
@@ -187,13 +192,6 @@ monitoring:
 ## 5. _helpers.tpl
 
 ```gotemplate
-{{/*
-Nome completo do chart
-*/}}
-{{- define "learning-lab.fullname" -}}
-{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
 {{/*
 Labels comuns aplicados a todos os recursos
 */}}
@@ -204,11 +202,13 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Selector labels para Deployments e Services
+Selector labels para Deployments e Services.
+Uso: {{ include "learning-lab.selectorLabels" (dict "name" "product-api" "root" .) }}
+(os nomes dos recursos são fixos, iguais aos manifests de k8s/, por isso não há helper de fullname)
 */}}
 {{- define "learning-lab.selectorLabels" -}}
 app: {{ .name }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/instance: {{ .root.Release.Name }}
 {{- end }}
 ```
 
@@ -230,11 +230,11 @@ spec:
   replicas: {{ .Values.productApi.replicas }}
   selector:
     matchLabels:
-      app: product-api
+      {{- include "learning-lab.selectorLabels" (dict "name" "product-api" "root" .) | nindent 6 }}
   template:
     metadata:
       labels:
-        app: product-api
+        {{- include "learning-lab.selectorLabels" (dict "name" "product-api" "root" .) | nindent 8 }}
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/actuator/prometheus"
@@ -334,6 +334,16 @@ helm/
 ```
 
 ```yaml
+# values-dev.yaml (exemplo) — ambiente de estudo enxuto
+productApi:
+  replicas: 1
+hpa:
+  enabled: false
+monitoring:
+  enabled: false
+```
+
+```yaml
 # values-prod.yaml (exemplo)
 productApi:
   replicas: 3
@@ -348,8 +358,8 @@ seedJob:
 
 ```bash
 helm install learning-lab helm/kubernetes-learning-lab/ \
-  -f helm/kubernetes-learning-lab/values.yaml \
-  -f helm/kubernetes-learning-lab/values-prod.yaml
+  --namespace learning-lab --create-namespace \
+  -f helm/kubernetes-learning-lab/values-prod.yaml   # values.yaml é carregado automaticamente
 ```
 
 ---
