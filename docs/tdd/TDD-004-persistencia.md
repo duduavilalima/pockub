@@ -1,6 +1,6 @@
 # TDD-004 — Persistência
 
-**Status:** Ready
+**Status:** Done
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [MODEL.md](../MODEL.md) · [ADR-003](../adr/ADR-003-postgresql-relacional.md) · [ADR-004](../adr/ADR-004-mongodb-nosql.md) · [ADR-006](../adr/ADR-006-statefulset-databases.md)
@@ -190,6 +190,8 @@ spec:
             storage: 1Gi
 ```
 
+> **Divergência na implementação:** as probes usam `--quiet` e `timeoutSeconds: 5` (o default de 1s é curto para o `mongosh`). Ver `_explain`.
+
 **Nome do Pod:** `mongodb-0`
 **Nome do PVC:** `mongodb-data-mongodb-0`
 
@@ -284,8 +286,8 @@ kubectl delete pvc postgres-data-postgresql-0
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] StatefulSets `postgresql` e `mongodb` em `Running` com PVC `Bound`
-- [ ] Cenários 4 e 5 do PRD executados: dados preservados após `kubectl delete pod`
-- [ ] Arquivo `TDD-004-persistencia_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-011)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] StatefulSets `postgresql` e `mongodb` em `Running` com PVC `Bound`
+- [x] Cenários 4 e 5 do PRD executados: dados preservados após `kubectl delete pod`
+- [x] Arquivo `TDD-004-persistencia_explain.md` gerado
+- [x] Estórias vinculadas atualizadas (US-011)

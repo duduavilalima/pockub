@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+  namespace: learning-lab
+data:
+  POSTGRES_DB: "pockub"
