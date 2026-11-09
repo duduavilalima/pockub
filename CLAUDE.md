@@ -241,9 +241,30 @@ Só marque `[x]` num critério de aceite depois de executar a validação corres
 **Definition of Done (DoD)**
 
 - *Estória:* todos os critérios de aceite marcados `[x]` após validação; TDDs vinculados `Done`; Cenários do PRD correspondentes executados.
-- *TDD:* artefatos implementados conforme o documento (divergências registradas no próprio TDD); validação executada (testes automatizados verdes para código; `kubectl apply --dry-run=server`, `helm lint` ou cenário do PRD para manifests); arquivo `_explain` gerado (regra abaixo); estórias vinculadas atualizadas.
+- *TDD:* artefatos implementados conforme o documento (divergências registradas no próprio TDD); validação executada (testes automatizados verdes para código, conforme a *Estratégia de Testes* abaixo; `kubectl apply --dry-run=server`, `helm lint` ou cenário do PRD para manifests); arquivo `_explain` gerado (regra abaixo); estórias vinculadas atualizadas.
 
 Cada estória e cada TDD traz suas seções `Definition of Ready` e `Definition of Done`, com os itens específicos do artefato.
+
+### Estratégia de Testes
+
+Vale para TDDs de **código** (hoje, o TDD-001). TDDs de manifests (K8s/Helm) não usam JUnit: validam-se com `kubectl apply --dry-run=server`, `helm lint` ou cenário do PRD.
+
+| Tipo                                | Ferramenta                    | Cobre                                                                 |
+|-------------------------------------|-------------------------------|-----------------------------------------------------------------------|
+| Unitário                            | JUnit 5 + Mockito             | Regra de uma classe isolada (`ProdutoService`, `LogAcessoService`)    |
+| Slice web                           | `@WebMvcTest` + `MockMvc`     | Contrato HTTP: status, validação (400), tratamento de erros, JSON     |
+| Integração                          | `@SpringBootTest` + Testcontainers (PostgreSQL 17, MongoDB 7) | O que só existe com banco real: Flyway/`ddl-auto: validate`, log assíncrono no MongoDB, ordenação, auditoria preservada |
+
+Regras:
+
+1. Prefira o tipo mais barato que consiga provar o critério; integração só quando unitário ou slice não bastarem.
+2. Testes de integração usam bancos reais em containers descartáveis — nunca H2 nem Mongo embarcado — para exercitar as mesmas versões do cluster.
+3. Todo critério de aceite de estória de código tem ao menos um teste; o TDD mapeia critério → tipo de teste na seção "Estratégia de Testes".
+4. Todo teste de integração depende de Docker disponível; a suíte (`./mvnw test`) deve rodar verde sem variáveis de ambiente manuais.
+
+Detalhes das ferramentas: [`docs/STACK.md`](docs/STACK.md#testes).
+
+---
 
 ### Explicação pós-implementação de TDD
 

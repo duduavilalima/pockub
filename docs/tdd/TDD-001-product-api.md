@@ -332,6 +332,50 @@ V1__create_produtos_table.sql
 
 ---
 
+## 13. Estratégia de Testes
+
+Regra geral e ferramentas em [CLAUDE.md](../../CLAUDE.md#estratégia-de-testes) e [STACK.md](../STACK.md#testes). Legenda: **U** = unitário (Mockito) · **W** = `@WebMvcTest` · **I** = integração (Testcontainers: PostgreSQL 17 + MongoDB 7).
+
+| Estória | Critério de aceite | Tipo |
+|---------|--------------------|------|
+| [US-001](../stories/US-001-criar-produto.md) | `POST` válido → `201` com `id` gerado | W |
+| | Persistido e recuperável via `GET /produtos/{id}` | I |
+| | `nome` ausente / em branco / > 255, `preco <= 0`, `quantidadeEstoque < 0` → `400` | W |
+| | `dataCriacao` e `dataAtualizacao` preenchidas automaticamente | I |
+| [US-002](../stories/US-002-atualizar-produto.md) | `PUT` válido → `200` com produto atualizado | W |
+| | `dataAtualizacao` muda; `dataCriacao` não muda | I |
+| | `id` inexistente → `404` | U + W |
+| | Validações idênticas ao RF-001 | W |
+| | Alteração persistida | I |
+| [US-003](../stories/US-003-excluir-produto.md) | `DELETE` → `204`; `id` inexistente → `404` | U + W |
+| | Produto removido (`GET` seguinte → `404`) | I |
+| | Logs do produto no MongoDB preservados | I |
+| [US-004](../stories/US-004-consultar-produto.md) | `GET /produtos/{id}` → `200`; inexistente → `404` | U + W |
+| | `LogAcesso` `CONSULTA` criado no MongoDB | U (chamada ao `LogAcessoService`) + I (documento gravado) |
+| | Falha ao gravar o log não afeta a resposta | U (repository lança, nada propaga) |
+| | Log não atrasa a resposta (`@Async`) | I (gravação em thread `log-async-*`) |
+| [US-005](../stories/US-005-listar-produtos.md) | `GET /produtos` → `200` com array; vazio → `[]` | U + W |
+| | `LogAcesso` `LISTAGEM` criado, inclusive com lista vazia | U + I |
+| | Log não atrasa a resposta | I |
+| [US-006](../stories/US-006-registrar-log-consulta.md) | `CONSULTA` e `LISTAGEM` geram log; `POST`/`PUT`/`DELETE` não geram | U (`verify(never())`) |
+| | Collection `access_logs` | I |
+| | `timestamp` capturado pelo chamador, não na gravação | U |
+| | `origemRequisicao` vem de `getRemoteAddr()` | W |
+| | Falha do log não propaga exceção | U |
+| [US-007](../stories/US-007-consultar-logs.md) | `GET /logs` → `200`; vazio → `[]` | W |
+| | Ordenado por `timestamp` decrescente | I |
+| | Todos os campos retornados | W |
+| [US-008](../stories/US-008-filtrar-logs-produto.md) | Filtro por `produtoId`; vazio → `[]` | I |
+| | Ordenação decrescente; `LISTAGEM` fora do filtro | I |
+| | `produtoId` não numérico → `400` | W |
+| | Funciona com produto já excluído | I |
+
+**Divergência conhecida (a resolver ao implementar os testes):** os critérios de `400` para `produtoId` não numérico (US-008, RF-008) e para id inválido em `/produtos/{id}` exigem tratar `MethodArgumentTypeMismatchException` no `GlobalExceptionHandler`. Hoje esse erro cai no handler genérico e responde `500`; o mesmo vale para JSON malformado e rota inexistente. Ao corrigir, atualizar a seção 8.
+
+Os testes de integração compartilham um único par de containers por execução (contêineres reutilizados entre classes) para manter a suíte rápida.
+
+---
+
 ## Definition of Ready
 
 - [x] Estórias vinculadas referenciadas

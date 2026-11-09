@@ -58,6 +58,20 @@
 
 ---
 
+## Testes
+
+| Tecnologia                | Papel                                                                 |
+|---------------------------|-----------------------------------------------------------------------|
+| JUnit 5                   | Framework de testes                                                   |
+| Mockito                   | Testes unitários de services (dependências mockadas)                  |
+| `@WebMvcTest` / MockMvc   | Testes da camada HTTP sem banco (status, validação, erros)            |
+| Testcontainers            | PostgreSQL 17 e MongoDB 7 reais e descartáveis nos testes de integração |
+| Docker                    | Pré-requisito para rodar os testes de integração                      |
+
+Testcontainers sobe as mesmas versões dos bancos usadas no cluster, em vez de H2 ou Mongo embarcado, para que Flyway, `ddl-auto: validate` e índices do MongoDB sejam exercitados de verdade. Os testes de integração são poucos e mais lentos; a maior parte da suíte é unitária e de slice web. A regra e a divisão por tipo estão em [CLAUDE.md](../CLAUDE.md#estratégia-de-testes).
+
+---
+
 ## Decisões de Arquitetura Relacionadas
 
 * [ADR-001 — Minikube como cluster local](adr/ADR-001-minikube-local-cluster.md)
