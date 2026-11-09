@@ -55,6 +55,36 @@ Junho/2026
 | [US-006](stories/US-006-registrar-log-consulta.md) | Registro Automático de Log |
 | [US-007](stories/US-007-consultar-logs.md)         | Consultar Logs de Acesso   |
 | [US-008](stories/US-008-filtrar-logs-produto.md)   | Filtrar Logs por Produto   |
+| [US-009](stories/US-009-containerizar-api.md) | Containerizar a Product API |
+| [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | Implantar a infraestrutura Kubernetes base |
+| [US-011](stories/US-011-persistencia-statefulsets.md) | Persistir dados com StatefulSets |
+| [US-012](stories/US-012-confiabilidade-escalabilidade.md) | Garantir confiabilidade e escalabilidade da API |
+| [US-013](stories/US-013-workloads-operacionais.md) | Executar workloads operacionais (Job, CronJob, DaemonSet) |
+| [US-014](stories/US-014-observabilidade.md) | Observar a plataforma com Prometheus e Grafana |
+| [US-015](stories/US-015-helm-chart.md) | Empacotar a plataforma em Helm Chart |
+| [US-016](stories/US-016-networkpolicy.md) | Isolar os bancos com NetworkPolicy |
+| [US-017](stories/US-017-simulacao-incidentes.md) | Simular incidentes e praticar troubleshooting |
+
+### Matriz de Rastreabilidade
+
+Fase do PRD → Estórias → TDDs. Regras e DoR/DoD em [CLAUDE.md](../CLAUDE.md#rastreabilidade-dor-e-dod).
+
+| Fase | Estórias | TDDs |
+|------|----------|------|
+| [Fase 1 — Fundamentos Kubernetes](#fase-1--fundamentos-kubernetes) | — (setup de ambiente) | — |
+| [Fase 2 — Aplicação](#fase-2--aplicação) | [US-001](stories/US-001-criar-produto.md), [US-002](stories/US-002-atualizar-produto.md), [US-003](stories/US-003-excluir-produto.md), [US-004](stories/US-004-consultar-produto.md), [US-005](stories/US-005-listar-produtos.md), [US-006](stories/US-006-registrar-log-consulta.md), [US-007](stories/US-007-consultar-logs.md), [US-008](stories/US-008-filtrar-logs-produto.md), [US-009](stories/US-009-containerizar-api.md) | [TDD-001](tdd/TDD-001-product-api.md), [TDD-002](tdd/TDD-002-containerizacao.md) |
+| [Fase 3 — Deploy da Aplicação](#fase-3--deploy-da-aplicação) | [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | [TDD-003](tdd/TDD-003-infraestrutura-kubernetes.md) |
+| [Fase 4 — Persistência](#fase-4--persistência) | [US-011](stories/US-011-persistencia-statefulsets.md) | [TDD-004](tdd/TDD-004-persistencia.md) |
+| [Fase 5 — Configuração](#fase-5--configuração) | [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | [TDD-003](tdd/TDD-003-infraestrutura-kubernetes.md) |
+| [Fase 6 — Confiabilidade](#fase-6--confiabilidade) | [US-012](stories/US-012-confiabilidade-escalabilidade.md) | [TDD-005](tdd/TDD-005-escalabilidade-confiabilidade.md) |
+| [Fase 7 — Escalabilidade](#fase-7--escalabilidade) | [US-012](stories/US-012-confiabilidade-escalabilidade.md) | [TDD-005](tdd/TDD-005-escalabilidade-confiabilidade.md) |
+| [Fase 8 — Exposição Externa](#fase-8--exposição-externa) | [US-010](stories/US-010-infraestrutura-kubernetes-base.md) | [TDD-003](tdd/TDD-003-infraestrutura-kubernetes.md) |
+| [Fase 9 — Operação](#fase-9--operação) | [US-013](stories/US-013-workloads-operacionais.md) | [TDD-006](tdd/TDD-006-workloads-especiais.md) |
+| [Fase 10 — Observabilidade Avançada](#fase-10--observabilidade-avançada) | [US-014](stories/US-014-observabilidade.md) | [TDD-007](tdd/TDD-007-observabilidade.md) |
+| [Fase 11 — Segurança de Rede](#fase-11--segurança-de-rede) | [US-016](stories/US-016-networkpolicy.md) | [TDD-009](tdd/TDD-009-networkpolicy.md) |
+| [Fase 12 — Helm](#fase-12--helm) | [US-015](stories/US-015-helm-chart.md) | [TDD-008](tdd/TDD-008-helm.md) |
+| [Fase 13 — Simulação de Incidentes](#fase-13--simulação-de-incidentes) | [US-017](stories/US-017-simulacao-incidentes.md) | [TDD-010](tdd/TDD-010-simulacao-incidentes.md) |
+| [Fase 14 — Terraform *(opcional — pós-POC)*](#fase-14--terraform-opcional--pós-poc) | — (opcional, fora do escopo da POC) | — |
 
 ---
 
@@ -164,38 +194,7 @@ Responsabilidades:
 
 # 4. Stack Tecnológica
 
-## Backend
-
-* Java 21
-* Spring Boot 4
-* Spring Data JPA
-* Spring Data MongoDB
-* Spring Actuator
-
-## Banco Relacional
-
-* PostgreSQL 17
-
-## Banco NoSQL
-
-* MongoDB
-
-## Build
-
-* Maven
-
-## Containers
-
-* Docker
-
-## Orquestração
-
-* Kubernetes
-* Minikube
-
-## Empacotamento
-
-* Helm
+Java 21, Spring Boot 4, PostgreSQL 17, MongoDB 7, Maven, Docker, Kubernetes/Minikube e Helm. Versões, papéis e ferramentas de observabilidade: [STACK.md](STACK.md).
 
 ---
 
@@ -209,7 +208,7 @@ Responsabilidades:
                         HTTP/HTTPS
                              │
                     [ Ingress Controller ]
-                    namespace: learning-lab
+                    namespace: ingress-nginx
                              │
                     [ Service: NodePort ]
                              │
@@ -231,7 +230,7 @@ Responsabilidades:
    └──────────┬──────────┘    └─────────────┬─────────────┘
               │                             │
            [ PVC ]                       [ PVC ]
-           postgres-pvc                  mongodb-pvc
+   postgres-data-postgresql-0     mongodb-data-mongodb-0
 
 
 [ Monitoring - namespace: monitoring ]
@@ -275,142 +274,34 @@ Cliente → Ingress → Service (NodePort) → Product API → MongoDB
 
 ## Namespaces
 
-| Namespace | Conteúdo |
-|-----------|----------|
-| `learning-lab` | Product API, PostgreSQL, MongoDB |
-| `monitoring` | Prometheus, Grafana |
+Ver [ADR-005](adr/ADR-005-dual-namespace.md) (`learning-lab`, `monitoring` e `ingress-nginx`).
 
 ---
 
 # 6. Requisitos Funcionais
 
-## RF-001 - Criar Produto
+Contrato detalhado (endpoints, validações, status HTTP) em [RULES.md](RULES.md); cada requisito tem uma estória.
 
-O sistema deve permitir cadastrar produtos.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | POST | /produtos | `{ nome, descricao, preco, quantidadeEstoque }` | 201 / 400 |
-
-Validações: `nome` obrigatório, `preco > 0`, `quantidadeEstoque >= 0`.
-
----
-
-## RF-002 - Atualizar Produto
-
-O sistema deve permitir atualizar produtos.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | PUT | /produtos/{id} | `{ nome, descricao, preco, quantidadeEstoque }` | 200 / 400 / 404 |
-
----
-
-## RF-003 - Excluir Produto
-
-O sistema deve permitir excluir produtos.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | DELETE | /produtos/{id} | - | 204 / 404 |
-
----
-
-## RF-004 - Consultar Produto
-
-O sistema deve permitir consultar um produto pelo identificador.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | GET | /produtos/{id} | - | 200 / 404 |
-
-Após a consulta, registra automaticamente um `LogAcesso` no MongoDB (RF-006).
-
----
-
-## RF-005 - Listar Produtos
-
-O sistema deve permitir listar todos os produtos.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | GET | /produtos | - | 200 |
-
-Após a listagem, registra automaticamente um `LogAcesso` no MongoDB (RF-006).
-
----
-
-## RF-006 - Registrar Log de Consulta
-
-Toda consulta de produto deve gerar automaticamente um registro no MongoDB com operação `CONSULTA` ou `LISTAGEM`.
-
-Esse RF é interno — não expõe endpoint próprio.
-
----
-
-## RF-007 - Consultar Logs
-
-O sistema deve permitir consultar todos os logs registrados.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | GET | /logs | - | 200 |
-
----
-
-## RF-008 - Filtrar Logs por Produto
-
-O sistema deve permitir consultar logs por produto.
-
-| Campo | Método | Endpoint | Body | Status |
-|-------|--------|----------|------|--------|
-| - | GET | /logs?produtoId={id} | - | 200 |
+| RF | Requisito | Estória |
+|----|-----------|---------|
+| [RF-001](RULES.md#rf-001--criar-produto) | Criar produto | [US-001](stories/US-001-criar-produto.md) |
+| [RF-002](RULES.md#rf-002--atualizar-produto) | Atualizar produto | [US-002](stories/US-002-atualizar-produto.md) |
+| [RF-003](RULES.md#rf-003--excluir-produto) | Excluir produto | [US-003](stories/US-003-excluir-produto.md) |
+| [RF-004](RULES.md#rf-004--consultar-produto) | Consultar produto (gera log) | [US-004](stories/US-004-consultar-produto.md) |
+| [RF-005](RULES.md#rf-005--listar-produtos) | Listar produtos (gera log) | [US-005](stories/US-005-listar-produtos.md) |
+| [RF-006](RULES.md#rf-006--registrar-log-de-consulta) | Registrar log de consulta (interno) | [US-006](stories/US-006-registrar-log-consulta.md) |
+| [RF-007](RULES.md#rf-007--consultar-logs) | Consultar logs | [US-007](stories/US-007-consultar-logs.md) |
+| [RF-008](RULES.md#rf-008--filtrar-logs-por-produto) | Filtrar logs por produto | [US-008](stories/US-008-filtrar-logs-produto.md) |
 
 ---
 
 # 7. Modelo de Dados
 
-## Produto (PostgreSQL)
-
-| Campo             | Tipo      | Restrições |
-| ----------------- | --------- | ---------- |
-| id                | Long      | PK, auto-increment |
-| nome              | String    | NOT NULL, máx 255 chars |
-| descricao         | String    | nullable |
-| preco             | Decimal   | NOT NULL, > 0 |
-| quantidadeEstoque | Integer   | NOT NULL, >= 0 |
-| dataCriacao       | Timestamp | NOT NULL, gerado automaticamente |
-| dataAtualizacao   | Timestamp | NOT NULL, atualizado automaticamente |
-
-Índices sugeridos: `nome` (busca futura).
-
----
-
-## LogAcesso (MongoDB — collection: `access_logs`)
-
-| Campo            | Tipo     | Restrições |
-| ---------------- | -------- | ---------- |
-| id               | String   | ObjectId, gerado automaticamente |
-| produtoId        | Long     | NOT NULL |
-| nomeProduto      | String   | NOT NULL |
-| operacao         | Enum     | `CONSULTA` \| `LISTAGEM` |
-| timestamp        | DateTime | NOT NULL, gerado automaticamente |
-| origemRequisicao | String   | IP ou User-Agent da requisição |
-
-Índices sugeridos: `produtoId` (para RF-008).
+`Produto` (PostgreSQL, tabela `produtos`) e `LogAcesso` (MongoDB, collection `access_logs`): campos, constraints, índices e mapeamento Java em [MODEL.md](MODEL.md).
 
 ---
 
 # 8. Arquitetura Kubernetes
-
-## Namespaces
-
-```text
-learning-lab   → aplicação (Product API, PostgreSQL, MongoDB)
-monitoring     → observabilidade (Prometheus, Grafana)
-```
-
----
 
 ## Componentes
 
@@ -433,7 +324,7 @@ monitoring     → observabilidade (Prometheus, Grafana)
 | Tipo      | StatefulSet                                                       |
 | Réplicas  | 1                                                                 |
 | Porta     | 5432                                                              |
-| Resources | requests: cpu=250m, memory=256Mi / limits: cpu=500m, memory=512Mi |
+| Resources | iguais aos da Product API |
 | Objetivo  | Persistência relacional                                           |
 
 ---
@@ -445,7 +336,7 @@ monitoring     → observabilidade (Prometheus, Grafana)
 | Tipo      | StatefulSet                                                       |
 | Réplicas  | 1                                                                 |
 | Porta     | 27017                                                             |
-| Resources | requests: cpu=250m, memory=256Mi / limits: cpu=500m, memory=512Mi |
+| Resources | iguais aos da Product API |
 | Objetivo  | Persistência NoSQL                                                |
 
 ---
@@ -575,6 +466,10 @@ Comunicação interna entre Pods (API → PostgreSQL, API → MongoDB).
 ### NodePort
 
 Exposição da API externamente durante os estudos (antes do Ingress).
+
+### LoadBalancer (simulado)
+
+Demonstração opcional com `minikube tunnel` ([TDD-003 §6](tdd/TDD-003-infraestrutura-kubernetes.md)).
 
 ---
 
@@ -931,11 +826,11 @@ Validação:
 
 ## Cenário 11 — ConfigMap
 
-Ação: Alterar um valor no ConfigMap e aplicar com `kubectl apply`.
+Ação: Alterar um valor no ConfigMap, aplicar com `kubectl apply` e reiniciar o Deployment com `kubectl rollout restart deployment/product-api -n learning-lab` (variáveis de ambiente injetadas por `envFrom` só são lidas na criação do Pod).
 
 Validação:
 
-* Nova configuração propagada para os Pods
+* Nova configuração propagada para os Pods recriados
 * Comportamento da aplicação reflete a mudança
 
 ---
@@ -975,12 +870,12 @@ Validação:
 
 ## Cenário 15 — CronJob (Limpeza de Logs)
 
-Ação: Disparar o CronJob manualmente com `kubectl create job --from=cronjob/log-cleanup`.
+Ação: Inserir um log antigo no MongoDB (ex.: `db.access_logs.insertOne({operacao:"CONSULTA", timestamp:new Date(Date.now()-40*864e5)})` via `mongosh`) e disparar o CronJob manualmente com `kubectl create job --from=cronjob/log-cleanup`.
 
 Validação:
 
 * Job criado e executado com sucesso
-* Logs com mais de 30 dias removidos do MongoDB
+* O log inserido (40 dias) é removido; logs recentes permanecem
 
 ---
 
@@ -991,7 +886,7 @@ Ação: Inspecionar o DaemonSet com `kubectl get daemonset -n learning-lab`.
 Validação:
 
 * Um Pod do DaemonSet em execução por node do cluster
-* Logs dos containers coletados e disponíveis
+* `kubectl logs` do Pod do DaemonSet mostra os logs dos containers da Product API no node (coleta simulada com `tail` sobre `hostPath`)
 
 ---
 
@@ -1014,6 +909,8 @@ Validação:
 
 * Product API consegue conectar ao PostgreSQL
 * Qualquer outro Pod bloqueado de acessar a porta 5432
+* MongoDB acessível apenas pela Product API e pelo CronJob `log-cleanup`
+* Pré-requisito: cluster iniciado com `--cni=calico`
 
 ---
 
@@ -1023,15 +920,18 @@ Validação:
 kubernetes-learning-lab/
 
 docs/
-├── architecture/
-├── diagrams/
-├── runbooks/
-└── PRD.md
+├── PRD.md
+├── STACK.md
+├── RULES.md
+├── MODEL.md
+├── adr/
+├── stories/
+└── tdd/
 
 application/
 └── product-api/
 
-docker/
+docker/                    ← reservado (o Dockerfile fica em application/product-api/)
 
 k8s/
 ├── namespace/
@@ -1040,14 +940,13 @@ k8s/
 ├── deployments/
 ├── services/
 ├── ingress/
-├── postgres/
+├── postgresql/
 ├── mongodb/
 ├── daemonsets/
 ├── jobs/
 ├── cronjobs/
 ├── hpa/
-├── networkpolicies/
-└── monitoring/
+└── networkpolicies/
 
 monitoring/
 ├── prometheus/
@@ -1081,7 +980,7 @@ A POC será considerada concluída quando:
 | Rollback funcionando | `kubectl rollout undo` restaura versão anterior em < 60s |
 | Health Checks funcionando | Pod removido do Service durante falha de Readiness |
 | Escalabilidade manual | `kubectl scale` cria/remove réplicas conforme esperado |
-| HPA funcionando | Escala de 1 para N réplicas com CPU > 50% por 30s |
+| HPA funcionando | Escala de 1 para N réplicas quando a CPU média passa de 50% dos `requests` (`kubectl get hpa`) |
 | Prometheus coletando métricas | Target `product-api` com status `UP` no Prometheus UI |
 | Grafana exibindo dashboards | Métricas de JVM e HTTP visíveis em tempo real |
 | Job concluindo | Status `Complete` após seed de dados |
@@ -1113,7 +1012,7 @@ Objetivos:
 
 * Desenvolver Product API (Java 21 + Spring Boot 4)
 * Dockerizar a aplicação
-* Publicar imagem no registry local do Minikube
+* Construir a imagem diretamente no daemon Docker do Minikube (`minikube docker-env`)
 
 Entregáveis:
 
@@ -1128,6 +1027,8 @@ Objetivos:
 * Criar Deployment para Product API
 * Criar Service (NodePort)
 * Verificar ReplicaSet criado automaticamente
+
+Nota: sem ConfigMap, Secret e bancos (Fases 4 e 5) o Pod da API não chega a `Ready` — o `CrashLoopBackOff` é esperado e útil para praticar troubleshooting. Ver [TDD-003 §10](tdd/TDD-003-infraestrutura-kubernetes.md).
 
 Entregáveis:
 
@@ -1241,7 +1142,8 @@ Entregáveis:
 Objetivos:
 
 * NetworkPolicy restringindo acesso ao PostgreSQL e MongoDB
-* Apenas a Product API autorizada a conectar nos bancos
+* Apenas a Product API autorizada a conectar nos bancos — exceção: o CronJob `log-cleanup` também precisa acessar o MongoDB e deve ter regra própria (label `app: log-cleanup`)
+* Minikube iniciado com `--cni=calico`; o CNI padrão não aplica NetworkPolicy
 * Demonstrar isolamento entre namespaces
 
 Entregáveis:

@@ -8,15 +8,15 @@
 
 **Tabela:** `produtos`
 
-| Campo | Tipo | Restrições |
-|-------|------|------------|
-| id | BIGSERIAL | PK, auto-increment |
-| nome | VARCHAR(255) | NOT NULL |
-| descricao | TEXT | nullable |
-| preco | NUMERIC(10,2) | NOT NULL, CHECK > 0 |
-| quantidade_estoque | INTEGER | NOT NULL, CHECK >= 0 |
-| data_criacao | TIMESTAMP | NOT NULL, DEFAULT now() |
-| data_atualizacao | TIMESTAMP | NOT NULL, atualizado automaticamente |
+| Campo              | Tipo          | Restrições                           |
+|--------------------|---------------|--------------------------------------|
+| id                 | BIGSERIAL     | PK, auto-increment                   |
+| nome               | VARCHAR(255)  | NOT NULL                             |
+| descricao          | TEXT          | nullable                             |
+| preco              | NUMERIC(10,2) | NOT NULL, CHECK > 0                  |
+| quantidade_estoque | INTEGER       | NOT NULL, CHECK >= 0                 |
+| data_criacao       | TIMESTAMP     | NOT NULL, DEFAULT now()              |
+| data_atualizacao   | TIMESTAMP     | NOT NULL, atualizado automaticamente |
 
 **Índices:**
 - PK em `id`
@@ -53,14 +53,14 @@ public class Produto {
 | Campo | Tipo | Restrições |
 |-------|------|------------|
 | id | String (ObjectId) | Gerado automaticamente pelo MongoDB |
-| produtoId | Long | NOT NULL |
-| nomeProduto | String | NOT NULL |
+| produtoId | Long | nullable — `null` para `LISTAGEM` |
+| nomeProduto | String | nullable — `null` para `LISTAGEM` |
 | operacao | Enum | `CONSULTA` \| `LISTAGEM` |
 | timestamp | DateTime | NOT NULL, gerado no momento da operação |
-| origemRequisicao | String | IP ou User-Agent da requisição |
+| origemRequisicao | String | IP do cliente (`getRemoteAddr()`, com `forward-headers-strategy` atrás do Ingress) |
 
 **Índices:**
-- `produtoId` — para queries de RF-008 (filtrar logs por produto)
+- `produtoId` — para queries de RF-008 (filtrar logs por produto); registros `LISTAGEM` têm `produtoId = null`
 - `timestamp` — para queries de limpeza no CronJob
 
 **Enum `Operacao`:**
@@ -100,8 +100,8 @@ Produto (PostgreSQL)
     quantidadeEstoque        │
                              ▼
                     LogAcesso (MongoDB)
-                        produtoId  ← cópia do Produto.id
-                        nomeProduto ← snapshot do Produto.nome
+                        produtoId  ← cópia do Produto.id (null em LISTAGEM)
+                        nomeProduto ← snapshot do Produto.nome (null em LISTAGEM)
                         operacao
                         timestamp
                         origemRequisicao

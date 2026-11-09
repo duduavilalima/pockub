@@ -9,6 +9,7 @@ import br.com.lima.pockub.repository.ProdutoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -47,13 +48,13 @@ public class ProdutoService {
 
     public ProdutoResponse buscarPorId(Long id, String origem) {
         Produto produto = buscarOuLancar(id);
-        logAcessoService.registrar(produto.getId(), produto.getNome(), Operacao.CONSULTA, origem);
+        logAcessoService.registrar(produto.getId(), produto.getNome(), Operacao.CONSULTA, LocalDateTime.now(), origem);
         return ProdutoResponse.from(produto);
     }
 
     public List<ProdutoResponse> listar(String origem) {
         List<Produto> produtos = produtoRepository.findAll();
-        logAcessoService.registrar(null, null, Operacao.LISTAGEM, origem);
+        logAcessoService.registrar(null, null, Operacao.LISTAGEM, LocalDateTime.now(), origem);
         return produtos.stream().map(ProdutoResponse::from).toList();
     }
 

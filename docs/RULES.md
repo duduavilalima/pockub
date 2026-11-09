@@ -14,7 +14,7 @@ O sistema deve permitir cadastrar produtos.
 | POST | /produtos | `{ nome, descricao, preco, quantidadeEstoque }` | 201 / 400 |
 
 **Validações:**
-- `nome` obrigatório, máximo 255 caracteres
+- `nome` obrigatório (não pode ser vazio/em branco), máximo 255 caracteres
 - `preco` obrigatório, maior que 0
 - `quantidadeEstoque` obrigatório, maior ou igual a 0
 
@@ -85,10 +85,10 @@ Toda operação de consulta (RF-004) ou listagem (RF-005) deve gerar automaticam
 | Campo | Valor |
 |-------|-------|
 | `operacao` | `CONSULTA` (RF-004) ou `LISTAGEM` (RF-005) |
-| `timestamp` | Momento exato da operação |
-| `origemRequisicao` | IP ou User-Agent da requisição |
+| `timestamp` | Momento exato da operação (capturado antes do disparo assíncrono) |
+| `origemRequisicao` | IP do cliente (`getRemoteAddr()`; atrás do Ingress requer `server.forward-headers-strategy`) |
 
-**Estória:** [US-006 — Registro Automático de Log](stories/US-006-registrar-log-consulta.md)
+**Estória:** [US-006 — Registro Automático de Log de Consulta](stories/US-006-registrar-log-consulta.md)
 
 ---
 
@@ -100,6 +100,8 @@ O sistema deve permitir consultar todos os logs registrados.
 |--------|----------|------|--------|
 | GET | /logs | — | 200 |
 
+**Ordenação:** `timestamp` decrescente (mais recentes primeiro).
+
 **Estória:** [US-007 — Consultar Logs](stories/US-007-consultar-logs.md)
 
 ---
@@ -110,6 +112,8 @@ O sistema deve permitir consultar logs filtrados por produto.
 
 | Método | Endpoint | Body | Status |
 |--------|----------|------|--------|
-| GET | /logs?produtoId={id} | — | 200 |
+| GET | /logs?produtoId={id} | — | 200 / 400 |
+
+**Comportamento:** `produtoId` não numérico retorna `400`. Mesma ordenação do RF-007; logs `LISTAGEM` (sem `produtoId`) não aparecem no filtro.
 
 **Estória:** [US-008 — Filtrar Logs por Produto](stories/US-008-filtrar-logs-produto.md)

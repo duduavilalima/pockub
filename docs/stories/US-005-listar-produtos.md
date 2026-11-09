@@ -1,6 +1,9 @@
 # US-005 — Listar Produtos
 
 **Requisito:** [RF-005](../RULES.md#rf-005--listar-produtos)
+**Status:** In Progress
+**PRD:** [Fase 2 — Aplicação](../PRD.md#fase-2--aplicação) · [Cenário 3 — Consulta com Auditoria](../PRD.md#cenário-3--consulta-com-auditoria)
+**TDD:** [TDD-001](../tdd/TDD-001-product-api.md)
 
 ---
 
@@ -38,6 +41,7 @@ Content-Type: application/json
   {
     "id": 1,
     "nome": "Teclado Mecânico RGB",
+    "descricao": "Teclado com switches Cherry MX e iluminação RGB",
     "preco": 349.90,
     "quantidadeEstoque": 10,
     "dataCriacao": "2026-06-03T10:00:00",
@@ -46,6 +50,7 @@ Content-Type: application/json
   {
     "id": 2,
     "nome": "Mouse Gamer",
+    "descricao": "DPI ajustável",
     "preco": 199.90,
     "quantidadeEstoque": 25,
     "dataCriacao": "2026-06-03T09:00:00",
@@ -66,3 +71,19 @@ Content-Type: application/json
   "origemRequisicao": "192.168.1.10"
 }
 ```
+
+
+---
+
+## Definition of Ready
+
+- [x] Estória no formato Como/quero/para
+- [x] Critérios de aceite verificáveis
+- [x] Referências ao PRD (Fase e Cenário) preenchidas
+- [x] TDD associado identificado
+
+## Definition of Done
+
+- [ ] Todos os critérios de aceite validados e marcados `[x]`
+- [ ] TDD-001 com status `Done`
+- [ ] Cenário 3 do PRD executado(s)

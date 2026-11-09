@@ -1,9 +1,11 @@
 # TDD-007 — Observabilidade
 
-**Status:** Draft
+**Status:** Ready
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [ADR-007](../adr/ADR-007-prometheus-grafana.md) · [ADR-005](../adr/ADR-005-dual-namespace.md) · [TDD-001](TDD-001-product-api.md)
+**Estórias:** [US-014](../stories/US-014-observabilidade.md)
+**PRD:** [Fase 10 — Observabilidade Avançada](../PRD.md#fase-10--observabilidade-avançada) · [Cenário 13 — Observabilidade](../PRD.md#cenário-13--observabilidade)
 
 ---
 
@@ -44,8 +46,7 @@ management:
       show-details: always
   metrics:
     tags:
-      application: product-api
-      namespace: learning-lab
+      application: product-api   # namespace/pod vêm do service discovery do Prometheus (relabel), não do app
 ```
 
 ### 2.3 Endpoints Disponíveis
@@ -77,7 +78,7 @@ management:
 
 ### 3.1 ServiceAccount e RBAC
 
-Prometheus precisa de permissão para descobrir serviços e endpoints em outros namespaces.
+Prometheus precisa de permissão para descobrir Pods (e Services/Endpoints) em outros namespaces.
 
 ```yaml
 # monitoring/prometheus/prometheus-rbac.yaml
@@ -95,6 +96,9 @@ rules:
   - apiGroups: [""]
     resources: ["nodes", "pods", "services", "endpoints"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes/proxy", "nodes/metrics"]   # scrape do cAdvisor via API server
+    verbs: ["get"]
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["get"]
@@ -115,6 +119,8 @@ subjects:
 
 ### 3.2 ConfigMap — prometheus.yml
 
+Requer as annotations `prometheus.io/scrape`, `prometheus.io/path` e `prometheus.io/port` no template de Pod da Product API ([TDD-003 §5](TDD-003-infraestrutura-kubernetes.md)). Target esperado no Prometheus UI: job `product-api`, um por réplica, status `UP`.
+
 ```yaml
 # monitoring/prometheus/prometheus-config.yaml
 apiVersion: v1
@@ -129,15 +135,9 @@ data:
       evaluation_interval: 15s
 
     scrape_configs:
+      # Descobre cada Pod anotado com prometheus.io/scrape=true (um target por réplica).
+      # Scrape via Service (static_configs) misturaria as réplicas quando o HPA escalar.
       - job_name: 'product-api'
-        metrics_path: '/actuator/prometheus'
-        static_configs:
-          - targets: ['product-api.learning-lab.svc.cluster.local:80']
-        relabel_configs:
-          - source_labels: [__address__]
-            target_label: instance
-
-      - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
           - role: pod
             namespaces:
@@ -145,7 +145,37 @@ data:
         relabel_configs:
           - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
             action: keep
-            regex: true
+            regex: "true"
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+
+      # CPU/memória por container (cAdvisor, embutido no kubelet) — base do painel "CPU e Memória dos Pods"
+      - job_name: 'kubernetes-cadvisor'
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
 ```
 
 ### 3.3 Deployment
@@ -170,7 +200,7 @@ spec:
       serviceAccountName: prometheus
       containers:
         - name: prometheus
-          image: prom/prometheus:v2.51.0
+          image: prom/prometheus:v3.5.0
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.retention.time=7d"
@@ -202,6 +232,7 @@ spec:
   ports:
     - port: 9090
       targetPort: 9090
+      nodePort: 30090
   type: NodePort
 ```
 
@@ -229,7 +260,21 @@ data:
         isDefault: true
 ```
 
-### 4.2 Deployment
+### 4.2 Secret — senha do admin
+
+```yaml
+# monitoring/grafana/grafana-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-secret
+  namespace: monitoring
+type: Opaque
+stringData:
+  admin-password: admin     # apenas para estudo — troque fora do ambiente de estudo
+```
+
+### 4.3 Deployment
 
 ```yaml
 # monitoring/grafana/grafana-deployment.yaml
@@ -250,12 +295,15 @@ spec:
     spec:
       containers:
         - name: grafana
-          image: grafana/grafana:10.4.0
+          image: grafana/grafana:12.0.0
           ports:
             - containerPort: 3000
           env:
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "admin"          # apenas para estudo
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: admin-password
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
           resources:
@@ -295,7 +343,7 @@ spec:
 ```bash
 # URL do Prometheus
 minikube service prometheus -n monitoring --url
-# ou: http://$(minikube ip):30090 (se NodePort configurado)
+# ou: http://$(minikube ip):30090
 
 # URL do Grafana
 minikube service grafana -n monitoring --url
@@ -314,7 +362,7 @@ minikube service grafana -n monitoring --url
 |-----------|-----|---------|
 | JVM Micrometer | `4701` | Heap, GC, Threads, CPU |
 | Spring Boot Statistics | `6756` | HTTP requests, error rate |
-| Kubernetes Cluster | `6417` | CPU/Memória dos nodes e pods |
+| Painel próprio (CPU/Memória dos Pods) | — | Construído com as queries de cAdvisor da seção 6.2; dashboards de cluster prontos (ex.: 6417) exigem também kube-state-metrics/node-exporter, que não são implantados |
 
 ### 6.2 Queries PromQL Úteis
 
@@ -329,6 +377,12 @@ histogram_quantile(0.99,
 
 # Uso de memória JVM
 jvm_memory_used_bytes{application="product-api", area="heap"}
+
+# CPU por Pod (cAdvisor)
+sum(rate(container_cpu_usage_seconds_total{namespace="learning-lab", container!=""}[5m])) by (pod)
+
+# Memória por Pod (cAdvisor)
+sum(container_memory_working_set_bytes{namespace="learning-lab", container!=""}) by (pod)
 
 # Conexões ativas no pool JDBC
 hikaricp_connections_active{application="product-api"}
@@ -381,7 +435,26 @@ Product API
 | Item | Detalhe |
 |------|---------|
 | Prometheus sem PVC | Dados de métricas perdidos ao reiniciar o Pod — adequado para estudo, mas adicionar PVC para persistência em uso contínuo |
-| RBAC cross-namespace | ClusterRole necessário — em produção restringir ao namespace específico |
-| Grafana admin/admin | Senha padrão apenas para estudo — alterar via Secret em ambientes reais |
-| Memória do Minikube | Prometheus + Grafana + aplicação somam ~1.5GB de requests — iniciar Minikube com `--memory=4096` |
+| RBAC cross-namespace | O `kubernetes_sd_configs` precisa listar Pods em `learning-lab`: ClusterRole (ou Role no namespace alvo) — em produção restringir ao namespace específico |
+| Grafana admin/admin | A senha vem do Secret `grafana-secret` (não mais do manifest), mas o valor continua `admin` — apenas para estudo; em ambientes reais use Sealed Secrets/External Secrets |
+| Memória do Minikube | Prometheus + Grafana + aplicação somam ~1.5GB de requests — iniciar Minikube com `--memory=6144 --cpus=4` (o HPA pode chegar a 5 réplicas de 250m) |
 | `retention.time=7d` | Retenção de 7 dias suficiente para estudo sem estourar disco |
+
+
+---
+
+## Definition of Ready
+
+- [x] Estórias vinculadas referenciadas
+- [x] Fase/Cenário do PRD referenciados
+- [x] ADRs relevantes e dependências de outros TDDs listados nas Referências
+- [x] Riscos documentados
+
+## Definition of Done
+
+- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [ ] Target `product-api` com status `UP` no Prometheus (um por réplica)
+- [ ] Dashboards de JVM e HTTP exibindo dados no Grafana
+- [ ] Cenário 13 do PRD executado
+- [ ] Arquivo `TDD-007-observabilidade_explain.md` gerado
+- [ ] Estórias vinculadas atualizadas (US-014)
