@@ -10,8 +10,7 @@
 |---------|---------|
 | `k8s/namespace/learning-lab.yaml`, `monitoring.yaml` | Namespaces |
 | `k8s/configmaps/product-api-config.yaml` | ConfigMap com `DB_URL`, `MONGO_URI`, `LOGGING_LEVEL_ROOT` |
-| `k8s/secrets/postgresql-secret.yaml` | Credenciais consumidas pelo container do PostgreSQL |
-| `k8s/secrets/product-api-secret.yaml` | `DB_USERNAME` / `DB_PASSWORD` consumidos pela API |
+| `k8s/secrets/apply-secrets.sh` (+ `.env.example`) | Cria `postgresql-secret` (container do PostgreSQL) e `product-api-secret` (`DB_USERNAME`/`DB_PASSWORD`) a partir de `k8s/secrets/.env`, sem senha em manifest |
 | `k8s/deployments/product-api.yaml` | Deployment (1 réplica, RollingUpdate, initContainer, probes, resources) |
 | `k8s/services/{postgresql,mongodb,product-api}-service.yaml` | Dois ClusterIP (bancos) e um NodePort (API, porta 30080) |
 | `k8s/ingress/product-api-ingress.yaml` | Ingress `product-api.local` → `product-api:80` |
@@ -47,8 +46,9 @@ Os manifests seguem exatamente o TDD; não houve divergência de conteúdo.
 
 ```bash
 minikube addons enable ingress
-kubectl apply --dry-run=server -f k8s/secrets/ -f k8s/configmaps/ -f k8s/services/ -f k8s/deployments/
-kubectl apply -f k8s/namespace/ -f k8s/secrets/ -f k8s/configmaps/
+kubectl apply --dry-run=server -f k8s/configmaps/ -f k8s/services/ -f k8s/deployments/
+kubectl apply -f k8s/namespace/ -f k8s/configmaps/
+k8s/secrets/apply-secrets.sh     # lê k8s/secrets/.env
 kubectl apply -f k8s/postgresql/ -f k8s/mongodb/      # TDD-004
 kubectl apply -f k8s/deployments/ -f k8s/services/ -f k8s/ingress/
 
