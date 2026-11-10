@@ -18,7 +18,11 @@ Chart `helm/kubernetes-learning-lab/` com `Chart.yaml`, `values.yaml` (+ `values
 - **`stringData` nos Secrets**: o Helm/K8s codificam; evita base64 manual no values.
 - **Label de instância nos `volumeClaimTemplates`**: permite `kubectl delete pvc -l app.kubernetes.io/instance=<release>` após o uninstall.
 
+- **Senhas fora do `values.yaml`**: `postgresql.credentials.password` e `monitoring.grafana.adminPassword` são vazias e os templates usam `required` (falha explícita em vez de Secret vazio). `helm/helm-env.sh` lê `helm/.env` e injeta com `--set-file` a partir de arquivos temporários, para a senha não aparecer na linha de comando (`ps`/histórico). O script não executa o `.env` (só lê `CHAVE=valor`); `GRAFANA_ADMIN_PASSWORD` é opcional quando `monitoring.enabled=false`.
+
 ## 3. Alternativas descartadas
+
+- **`source .env` + `--set k=$VAR`**: expõe a senha no `ps`, e vírgulas/barras no valor quebram o `--set`.
 
 - **Kustomize**: não ensina o ciclo de release (history/rollback) que o estudo quer.
 - **Subcharts (um por componente)**: mais arquivos sem ganho de aprendizado.
@@ -37,11 +41,12 @@ Chart `helm/kubernetes-learning-lab/` com `Chart.yaml`, `values.yaml` (+ `values
 ## 5. Como validar
 
 ```bash
-helm lint helm/kubernetes-learning-lab/
-helm template learning-lab helm/kubernetes-learning-lab/ -n learning-lab | kubectl apply --dry-run=client -f -
+helm/helm-env.sh lint helm/kubernetes-learning-lab/
+helm/helm-env.sh template learning-lab helm/kubernetes-learning-lab/ -n learning-lab | kubectl apply --dry-run=client -f -
 
-helm install learning-lab helm/kubernetes-learning-lab/ -n learning-lab --create-namespace --wait
-helm upgrade learning-lab helm/kubernetes-learning-lab/ -n learning-lab --set productApi.replicas=2 --set hpa.enabled=false
+cp helm/.env.example helm/.env   # preencher as senhas
+helm/helm-env.sh install learning-lab helm/kubernetes-learning-lab/ -n learning-lab --create-namespace --wait
+helm/helm-env.sh upgrade learning-lab helm/kubernetes-learning-lab/ -n learning-lab --set productApi.replicas=2 --set hpa.enabled=false
 helm history learning-lab -n learning-lab
 helm rollback learning-lab 1 -n learning-lab
 helm uninstall learning-lab -n learning-lab

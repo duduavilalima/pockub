@@ -124,7 +124,7 @@ postgresql:
   credentials:
     database: pockub
     username: pockub
-    password: pockub123  # apenas para estudo — usar Secret externo em produção
+    password: ""        # OBRIGATÓRIO — vem de POSTGRES_PASSWORD no .env (ver helm/helm-env.sh)
     # o template secret.yaml gera `postgresql-secret` (POSTGRES_USER/PASSWORD)
     # e `product-api-secret` (DB_USERNAME/DB_PASSWORD) a partir destes valores
 
@@ -183,7 +183,7 @@ monitoring:
     image:
       repository: grafana/grafana
       tag: "12.0.0"
-    adminPassword: admin   # vira o Secret grafana-secret
+    adminPassword: ""     # OBRIGATÓRIO (se monitoring.enabled) — vem de GRAFANA_ADMIN_PASSWORD no .env; vira o Secret grafana-secret
     nodePort: 30300
 ```
 
@@ -253,6 +253,18 @@ spec:
 ---
 
 ## 7. Comandos de Uso
+
+### Senhas (arquivo `.env`)
+
+O `values.yaml` não contém senhas; os templates usam `required` e falham se elas não forem informadas. O script `helm/helm-env.sh` lê `helm/.env` (ignorado pelo git; modelo em `helm/.env.example`) e repassa as senhas ao Helm via `--set-file`:
+
+```bash
+cp helm/.env.example helm/.env      # preencher POSTGRES_PASSWORD e GRAFANA_ADMIN_PASSWORD
+helm/helm-env.sh install learning-lab helm/kubernetes-learning-lab/ -n learning-lab --create-namespace
+helm/helm-env.sh upgrade learning-lab helm/kubernetes-learning-lab/ -n learning-lab
+```
+
+Nos exemplos abaixo, `helm/helm-env.sh` pode substituir `helm` em `install`, `upgrade`, `template` e `lint`.
 
 ### Instalação
 
@@ -384,7 +396,7 @@ Divergências em relação ao desenho acima:
 
 | Item | Detalhe |
 |------|---------|
-| Secrets no values.yaml | Senhas em texto puro no values.yaml — usar `--set` via CI ou Sealed Secrets em produção |
+| Senhas | Fora do `values.yaml`: vêm de `helm/.env` via `helm/helm-env.sh` (`--set-file`). Os valores ainda ficam no Secret do cluster e no histórico de release do Helm — em produção use Sealed Secrets/External Secrets |
 | PVC não removido no uninstall | Comportamento esperado do StatefulSet — documentar para o operador |
 | Labels nos PVCs | PVCs criados por `volumeClaimTemplates` não herdam os labels do chart. Declare `app.kubernetes.io/instance: {{ .Release.Name }}` em `volumeClaimTemplates[].metadata.labels` nos templates dos StatefulSets, senão o `kubectl delete pvc -l ...` não encontra nada |
 | Namespace | `--create-namespace` cria o `learning-lab`; não há `namespace.yaml` para ele no chart (evita conflito de ownership do Helm). O namespace `monitoring` é criado por um template do chart e removido junto no `helm uninstall` |
