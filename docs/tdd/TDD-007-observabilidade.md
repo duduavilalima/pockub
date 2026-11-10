@@ -262,17 +262,7 @@ data:
 
 ### 4.2 Secret — senha do admin
 
-```yaml
-# monitoring/grafana/grafana-secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: grafana-secret
-  namespace: monitoring
-type: Opaque
-stringData:
-  admin-password: admin     # apenas para estudo — troque fora do ambiente de estudo
-```
+O Secret `grafana-secret` (chave `admin-password`) é criado por `k8s/secrets/apply-secrets.sh` a partir de `GRAFANA_ADMIN_PASSWORD` em `k8s/secrets/.env` — não há manifest com a senha. Rode o script depois de criar o namespace `monitoring`.
 
 ### 4.3 Deployment
 
@@ -451,7 +441,7 @@ Product API
 |------|---------|
 | Prometheus sem PVC | Dados de métricas perdidos ao reiniciar o Pod — adequado para estudo, mas adicionar PVC para persistência em uso contínuo |
 | RBAC cross-namespace | O `kubernetes_sd_configs` precisa listar Pods em `learning-lab`: ClusterRole (ou Role no namespace alvo) — em produção restringir ao namespace específico |
-| Grafana admin/admin | A senha vem do Secret `grafana-secret` (não mais do manifest), mas o valor continua `admin` — apenas para estudo; em ambientes reais use Sealed Secrets/External Secrets |
+| Grafana admin/admin | A senha vem de `k8s/secrets/.env` via `apply-secrets.sh` (não está mais em manifest versionado); ainda é um Secret Base64 no cluster — em ambientes reais use Sealed Secrets/External Secrets |
 | Memória do Minikube | Prometheus + Grafana + aplicação somam ~1.5GB de requests — iniciar Minikube com `--memory=6144 --cpus=4` (o HPA pode chegar a 5 réplicas de 250m) |
 | `retention.time=7d` | Retenção de 7 dias suficiente para estudo sem estourar disco |
 

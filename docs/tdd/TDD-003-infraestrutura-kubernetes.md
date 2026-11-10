@@ -66,41 +66,27 @@ data:
 
 ## 4. Secrets
 
-### Credenciais do PostgreSQL (consumidas pelo container do banco)
+Os Secrets **não têm mais manifest com senha**: são criados por `k8s/secrets/apply-secrets.sh`, que lê `k8s/secrets/.env` (ignorado pelo git; modelo em `k8s/secrets/.env.example`) e usa `kubectl create secret generic --from-env-file` com arquivos temporários (a senha não aparece na linha de comando).
 
-```yaml
-# k8s/secrets/postgresql-secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: postgresql-secret
-  namespace: learning-lab
-type: Opaque
-data:
-  POSTGRES_USER: cG9ja3Vi          # base64: pockub
-  POSTGRES_PASSWORD: cG9ja3ViMTIz  # base64: pockub123
+```bash
+cp k8s/secrets/.env.example k8s/secrets/.env     # preencher POSTGRES_PASSWORD e GRAFANA_ADMIN_PASSWORD
+kubectl apply -f k8s/namespace/
+k8s/secrets/apply-secrets.sh
 ```
+
+Secrets criados:
+
+| Secret | Namespace | Chaves |
+|--------|-----------|--------|
+| `postgresql-secret` | `learning-lab` | `POSTGRES_USER`, `POSTGRES_PASSWORD` (consumidas pelo container do banco) |
+| `product-api-secret` | `learning-lab` | `DB_USERNAME`, `DB_PASSWORD` (nomes esperados pelo `application.yaml`; mesmos valores do PostgreSQL) |
+| `grafana-secret` | `monitoring` | `admin-password` ([TDD-007](TDD-007-observabilidade.md)); pulado se o namespace `monitoring` não existir |
 
 O nome do banco (`POSTGRES_DB`) não é sensível e fica no ConfigMap `postgresql-config` ([TDD-004](TDD-004-persistencia.md)).
 
-### Credenciais da Product API (nomes esperados pelo `application.yaml`)
-
-```yaml
-# k8s/secrets/product-api-secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: product-api-secret
-  namespace: learning-lab
-type: Opaque
-data:
-  DB_USERNAME: cG9ja3Vi            # base64: pockub
-  DB_PASSWORD: cG9ja3ViMTIz        # base64: pockub123
-```
-
 > Os valores de `DB_USERNAME`/`DB_PASSWORD` devem ser idênticos aos de `POSTGRES_USER`/`POSTGRES_PASSWORD`. Não há Secret para o MongoDB: a POC não usa autenticação ([ADR-004](../adr/ADR-004-mongodb-nosql.md)); se a auth for habilitada, a `MONGO_URI` (com credenciais) passa a ir para o `product-api-secret`.
 
-> **Atenção:** Secrets em Base64 não são criptografados — apenas codificados. Em produção, usar Sealed Secrets ou External Secrets Operator.
+> **Atenção:** Secrets no cluster ficam em Base64 não são criptografados — apenas codificados. Em produção, usar Sealed Secrets ou External Secrets Operator.
 
 ---
 
@@ -358,7 +344,7 @@ Externo
 kubectl apply -f k8s/namespace/
 
 # 2. Secrets e ConfigMaps
-kubectl apply -f k8s/secrets/
+k8s/secrets/apply-secrets.sh        # lê k8s/secrets/.env
 kubectl apply -f k8s/configmaps/
 
 # 3. Persistência (PostgreSQL + MongoDB)

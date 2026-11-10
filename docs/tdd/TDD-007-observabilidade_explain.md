@@ -12,7 +12,7 @@
 | `monitoring/prometheus/prometheus-config.yaml` | ConfigMap com `prometheus.yml` (jobs `product-api` e `kubernetes-cadvisor`) |
 | `monitoring/prometheus/prometheus-deployment.yaml` | Deployment + Service NodePort `30090` |
 | `monitoring/grafana/grafana-datasource.yaml` | ConfigMap de provisioning do datasource Prometheus |
-| `monitoring/grafana/grafana-secret.yaml` | Secret com a senha do admin |
+| `k8s/secrets/apply-secrets.sh` | Cria o Secret `grafana-secret` (senha do admin) a partir do `.env` |
 | `monitoring/grafana/grafana-deployment.yaml` | Deployment + Service NodePort `30300` |
 | `monitoring/grafana/dashboards/pods-cpu-memoria.json` | Painel próprio de CPU/memória por Pod |
 
@@ -44,7 +44,8 @@ Actuator, Micrometer, annotations `prometheus.io/*` e Metrics Server **já exist
 ## 5. Como validar
 
 ```bash
-kubectl apply -R -f monitoring/
+k8s/secrets/apply-secrets.sh   # cria o grafana-secret
+kubectl apply -f monitoring/prometheus/ -f monitoring/grafana/
 kubectl get pods -n monitoring
 
 # targets
