@@ -1,0 +1,46 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgresql-allow-api
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "learning-lab.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: product-api
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mongodb-allow-api-and-cleanup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "learning-lab.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app: mongodb
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: product-api
+        - podSelector:
+            matchLabels:
+              app: log-cleanup
+      ports:
+        - protocol: TCP
+          port: 27017
+{{- end }}

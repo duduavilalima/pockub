@@ -1,7 +1,7 @@
 # US-016 — Isolar os bancos com NetworkPolicy
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Ready
+**Status:** Done
 **PRD:** [Fase 11 — Segurança de Rede](../PRD.md#fase-11--segurança-de-rede) · [Cenário 18 — NetworkPolicy](../PRD.md#cenário-18--networkpolicy)
 **TDD:** [TDD-009](../tdd/TDD-009-networkpolicy.md)
 
@@ -17,10 +17,10 @@
 
 ## Critérios de Aceite
 
-- [ ] Cluster iniciado com CNI que aplica NetworkPolicy (`--cni=calico`)
-- [ ] Product API conecta ao PostgreSQL e ao MongoDB
-- [ ] CronJob `log-cleanup` conecta ao MongoDB (regra própria)
-- [ ] Qualquer outro Pod é bloqueado nas portas 5432 e 27017
+- [x] Cluster iniciado com CNI que aplica NetworkPolicy (`--cni=calico`)
+- [x] Product API conecta ao PostgreSQL e ao MongoDB
+- [x] CronJob `log-cleanup` conecta ao MongoDB (regra própria)
+- [x] Qualquer outro Pod é bloqueado nas portas 5432 e 27017
 
 
 ---
@@ -34,6 +34,6 @@
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-009 com status `Done`
-- [ ] Cenário 18 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-009 com status `Done`
+- [x] Cenário 18 do PRD executado(s)

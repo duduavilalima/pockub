@@ -1,0 +1,12 @@
+apiVersion: v2
+name: kubernetes-learning-lab
+description: POC de estudo Kubernetes — Product API com PostgreSQL e MongoDB
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - kubernetes
+  - study
+  - spring-boot
+maintainers:
+  - name: Equipe de Estudos Kubernetes

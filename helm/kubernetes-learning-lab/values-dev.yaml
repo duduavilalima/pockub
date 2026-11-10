@@ -1,0 +1,7 @@
+# Ambiente de estudo enxuto
+productApi:
+  replicas: 1
+hpa:
+  enabled: false
+monitoring:
+  enabled: false

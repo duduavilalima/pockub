@@ -1,0 +1,40 @@
+{{- if .Values.logCleanup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: log-cleanup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "learning-lab.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.logCleanup.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: log-cleanup      # usado pela NetworkPolicy que libera o acesso ao MongoDB
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: log-cleanup
+              image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+              command:
+                - mongosh
+                - mongodb://mongodb:27017/{{ .Values.postgresql.credentials.database }}
+                - --eval
+                - |
+                  const limite = new Date();
+                  limite.setDate(limite.getDate() - {{ .Values.logCleanup.retentionDays }});
+                  const result = db.access_logs.deleteMany({
+                    timestamp: { $lt: limite }
+                  });
+                  print("Logs removidos:", result.deletedCount);
+              resources:
+                requests: {cpu: "50m", memory: "64Mi"}
+                limits: {cpu: "200m", memory: "256Mi"}
+{{- end }}

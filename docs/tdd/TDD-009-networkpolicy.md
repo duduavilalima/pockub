@@ -1,6 +1,6 @@
 # TDD-009 — NetworkPolicy
 
-**Status:** Ready
+**Status:** Done
 **Versão:** 1.0
 **Data:** Novembro/2026
 **Referências:** [ADR-005](../adr/ADR-005-dual-namespace.md) · [TDD-004](TDD-004-persistencia.md) · [TDD-006](TDD-006-workloads-especiais.md)
@@ -133,8 +133,8 @@ Para observar o efeito no diagnóstico: remova a policy (`kubectl delete -f k8s/
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] Cluster iniciado com `--cni=calico` e policies aplicadas
-- [ ] Cenário 18 do PRD executado: API conecta, CronJob conecta, Pod não autorizado é bloqueado
-- [ ] Arquivo `TDD-009-networkpolicy_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-016)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] Cluster iniciado com `--cni=calico` e policies aplicadas
+- [x] Cenário 18 do PRD executado: API conecta, CronJob conecta, Pod não autorizado é bloqueado
+- [x] Arquivo `TDD-009-networkpolicy_explain.md` gerado
+- [x] Estórias vinculadas atualizadas (US-016)
