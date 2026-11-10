@@ -1,0 +1,108 @@
+# O namespace da aplicação NÃO é um value: vem de `helm install --namespace learning-lab --create-namespace`
+# e é referenciado nos templates como {{ .Release.Namespace }}.
+
+# Product API
+productApi:
+  image:
+    repository: product-api
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  nodePort: 30080   # usado quando service.type=NodePort (Fases 3–7); com Ingress o padrão é ClusterIP
+
+# Ingress
+ingress:
+  enabled: true
+  className: nginx
+  host: product-api.local
+
+# PostgreSQL
+postgresql:
+  image:
+    repository: postgres
+    tag: "17-alpine"
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  storage:
+    size: 1Gi
+    storageClassName: standard
+  credentials:
+    database: pockub
+    username: pockub
+    password: pockub123  # apenas para estudo — usar Secret externo em produção
+    # o template secret.yaml gera `postgresql-secret` (POSTGRES_USER/PASSWORD)
+    # e `product-api-secret` (DB_USERNAME/DB_PASSWORD) a partir destes valores
+
+# MongoDB
+mongodb:
+  image:
+    repository: mongo
+    tag: "7"
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  storage:
+    size: 1Gi
+    storageClassName: standard
+
+# HPA
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 50
+
+# Job de seed
+seedJob:
+  enabled: true
+
+# CronJob de limpeza
+logCleanup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retentionDays: 30
+
+# DaemonSet
+logCollector:
+  enabled: true
+
+# NetworkPolicy (requer CNI com suporte, ex.: minikube start --cni=calico)
+networkPolicy:
+  enabled: true
+
+# Observabilidade
+monitoring:
+  enabled: true
+  namespace: monitoring
+  prometheus:
+    image:
+      repository: prom/prometheus
+      tag: "v3.5.0"
+    retention: "7d"
+    nodePort: 30090
+  grafana:
+    image:
+      repository: grafana/grafana
+      tag: "12.0.0"
+    adminPassword: admin   # vira o Secret grafana-secret
+    nodePort: 30300

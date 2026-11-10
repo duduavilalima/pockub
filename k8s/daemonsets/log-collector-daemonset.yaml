@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-collector
+  namespace: learning-lab
+  labels:
+    app: log-collector
+spec:
+  selector:
+    matchLabels:
+      app: log-collector
+  template:
+    metadata:
+      labels:
+        app: log-collector
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: log-collector
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Log collector iniciado no node: $NODE_NAME"
+              # coleta simulada: acompanha (tail) os logs dos containers da Product API no node
+              exec tail -F /var/log/containers/product-api-*.log
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+            # runtime Docker: /var/log/pods/.../0.log é symlink para /var/lib/docker/containers
+            - name: docker-containers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: docker-containers
+          hostPath:
+            path: /var/lib/docker/containers

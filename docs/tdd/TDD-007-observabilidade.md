@@ -1,6 +1,6 @@
 # TDD-007 — Observabilidade
 
-**Status:** Ready
+**Status:** Done
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [ADR-007](../adr/ADR-007-prometheus-grafana.md) · [ADR-005](../adr/ADR-005-dual-namespace.md) · [TDD-001](TDD-001-product-api.md)
@@ -362,7 +362,22 @@ minikube service grafana -n monitoring --url
 |-----------|-----|---------|
 | JVM Micrometer | `4701` | Heap, GC, Threads, CPU |
 | Spring Boot Statistics | `6756` | HTTP requests, error rate |
-| Painel próprio (CPU/Memória dos Pods) | — | Construído com as queries de cAdvisor da seção 6.2; dashboards de cluster prontos (ex.: 6417) exigem também kube-state-metrics/node-exporter, que não são implantados |
+| Painel próprio (CPU/Memória dos Pods) | — | `monitoring/grafana/dashboards/pods-cpu-memoria.json`, construído com as queries de cAdvisor da seção 6.2; dashboards de cluster prontos (ex.: 6417) exigem também kube-state-metrics/node-exporter, que não são implantados |
+
+Importação (a partir do host; Grafana em `http://$(minikube ip):30300`, `admin:admin`):
+
+```bash
+# dashboards da Grafana.com (4701 e 6756) — inputs mapeiam DS_PROMETHEUS -> datasource "Prometheus"
+curl -sL https://grafana.com/api/dashboards/4701/revisions/latest/download -o d4701.json
+# envelope: {"dashboard": <json com "id": null>, "overwrite": true, "inputs":[{"name":"DS_PROMETHEUS","type":"datasource","pluginId":"prometheus","value":"Prometheus"}]}
+curl -u admin:admin -H 'Content-Type: application/json' -X POST http://$(minikube ip):30300/api/dashboards/import -d @i4701.json
+
+# painel próprio
+curl -u admin:admin -H 'Content-Type: application/json' -X POST http://$(minikube ip):30300/api/dashboards/db \
+  -d "{\"dashboard\": $(cat monitoring/grafana/dashboards/pods-cpu-memoria.json), \"overwrite\": true}"
+```
+
+> **Divergência:** com o runtime Docker do Minikube (cri-dockerd) o cAdvisor expõe `container_*` apenas no nível do Pod (sem o label `container`). O filtro `container!=""` previsto originalmente retornava 0 séries; as queries usam `pod!=""`.
 
 ### 6.2 Queries PromQL Úteis
 
@@ -379,10 +394,10 @@ histogram_quantile(0.99,
 jvm_memory_used_bytes{application="product-api", area="heap"}
 
 # CPU por Pod (cAdvisor)
-sum(rate(container_cpu_usage_seconds_total{namespace="learning-lab", container!=""}[5m])) by (pod)
+sum(rate(container_cpu_usage_seconds_total{namespace="learning-lab", pod!=""}[5m])) by (pod)
 
 # Memória por Pod (cAdvisor)
-sum(container_memory_working_set_bytes{namespace="learning-lab", container!=""}) by (pod)
+sum(container_memory_working_set_bytes{namespace="learning-lab", pod!=""}) by (pod)
 
 # Conexões ativas no pool JDBC
 hikaricp_connections_active{application="product-api"}
@@ -452,9 +467,9 @@ Product API
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] Target `product-api` com status `UP` no Prometheus (um por réplica)
-- [ ] Dashboards de JVM e HTTP exibindo dados no Grafana
-- [ ] Cenário 13 do PRD executado
-- [ ] Arquivo `TDD-007-observabilidade_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-014)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] Target `product-api` com status `UP` no Prometheus (um por réplica)
+- [x] Dashboards de JVM e HTTP exibindo dados no Grafana
+- [x] Cenário 13 do PRD executado
+- [x] Arquivo `TDD-007-observabilidade_explain.md` gerado
+- [x] Estórias vinculadas atualizadas (US-014)

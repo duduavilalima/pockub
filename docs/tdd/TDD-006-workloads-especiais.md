@@ -1,6 +1,6 @@
 # TDD-006 — Workloads Especiais
 
-**Status:** Ready
+**Status:** Done
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [PRD — Fase 9](../PRD.md#fase-9--operação) · [TDD-003](TDD-003-infraestrutura-kubernetes.md)
@@ -238,10 +238,17 @@ spec:
             - name: varlog
               mountPath: /var/log
               readOnly: true
+            # runtime Docker: /var/log/pods/.../0.log é symlink para /var/lib/docker/containers
+            - name: docker-containers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
       volumes:
         - name: varlog
           hostPath:
             path: /var/log
+        - name: docker-containers
+          hostPath:
+            path: /var/lib/docker/containers
 ```
 
 ### 4.3 Verificação
@@ -287,6 +294,7 @@ O Minikube tem apenas 1 node — o DaemonSet cria exatamente 1 Pod. Em clusters 
 | CronJob timezone | Por padrão usa UTC — ajustar `timeZone: "America/Sao_Paulo"` se necessário (K8s 1.27+) |
 | DaemonSet em control-plane | A `toleration` só tem efeito se o node tiver o taint `control-plane`; no Minikube de 1 node normalmente não há taint, e ela fica como exemplo para clusters multi-node |
 | NetworkPolicy (Fase 11) | O CronJob conecta direto no MongoDB; a policy de isolamento do banco deve permitir Pods com `app: log-cleanup` além da `product-api` |
+| Symlinks de log (Docker) | **Divergência da implementação:** no Minikube com runtime Docker, `/var/log/containers/*.log` → `/var/log/pods/.../0.log` → `/var/lib/docker/containers/<id>/<id>-json.log`. Só com `/var/log` montado o `tail` falha (`No such file or directory`); por isso o DaemonSet monta também `/var/lib/docker/containers` (somente leitura) |
 | `ttlSecondsAfterFinished` | Omitido de propósito no seed, para que o Job e seus logs continuem disponíveis nas verificações; em uso real, defina (ex.: `3600`) para limpar Jobs concluídos |
 
 
@@ -301,10 +309,10 @@ O Minikube tem apenas 1 node — o DaemonSet cria exatamente 1 Pod. Em clusters 
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] Job `seed-data` com status `Complete` e produtos visíveis em `GET /produtos`
-- [ ] CronJob disparado manualmente com `kubectl create job --from=cronjob/log-cleanup`
-- [ ] DaemonSet com 1 Pod por node
-- [ ] Cenários 14, 15 e 16 do PRD executados
-- [ ] Arquivo `TDD-006-workloads-especiais_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-013)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] Job `seed-data` com status `Complete` e produtos visíveis em `GET /produtos`
+- [x] CronJob disparado manualmente com `kubectl create job --from=cronjob/log-cleanup`
+- [x] DaemonSet com 1 Pod por node
+- [x] Cenários 14, 15 e 16 do PRD executados
+- [x] Arquivo `TDD-006-workloads-especiais_explain.md` gerado
+- [x] Estórias vinculadas atualizadas (US-013)

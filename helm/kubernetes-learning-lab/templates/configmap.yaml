@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: product-api-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "learning-lab.labels" . | nindent 4 }}
+data:
+  DB_URL: "jdbc:postgresql://postgresql:5432/{{ .Values.postgresql.credentials.database }}"
+  MONGO_URI: "mongodb://mongodb:27017/{{ .Values.postgresql.credentials.database }}"   # sem credenciais (MongoDB sem auth na POC)
+  LOGGING_LEVEL_ROOT: "INFO"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "learning-lab.labels" . | nindent 4 }}
+data:
+  POSTGRES_DB: {{ .Values.postgresql.credentials.database | quote }}

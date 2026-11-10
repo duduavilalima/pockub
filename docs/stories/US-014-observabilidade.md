@@ -1,7 +1,7 @@
 # US-014 — Observar a plataforma com Prometheus e Grafana
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Ready
+**Status:** Done
 **PRD:** [Fase 10 — Observabilidade Avançada](../PRD.md#fase-10--observabilidade-avançada) · [Cenário 13 — Observabilidade](../PRD.md#cenário-13--observabilidade)
 **TDD:** [TDD-007](../tdd/TDD-007-observabilidade.md)
 
@@ -17,10 +17,10 @@
 
 ## Critérios de Aceite
 
-- [ ] Prometheus e Grafana em `Running` no namespace `monitoring`
-- [ ] Target `product-api` com status `UP` no Prometheus (um target por réplica)
-- [ ] Grafana com Prometheus como datasource e dashboards de JVM e HTTP exibindo dados
-- [ ] `kubectl top pods` e `kubectl top nodes` funcionam com o Metrics Server
+- [x] Prometheus e Grafana em `Running` no namespace `monitoring`
+- [x] Target `product-api` com status `UP` no Prometheus (um target por réplica)
+- [x] Grafana com Prometheus como datasource e dashboards de JVM e HTTP exibindo dados
+- [x] `kubectl top pods` e `kubectl top nodes` funcionam com o Metrics Server
 
 
 ---
@@ -34,6 +34,6 @@
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-007 com status `Done`
-- [ ] Cenário 13 do PRD executado(s)
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-007 com status `Done`
+- [x] Cenário 13 do PRD executado(s)

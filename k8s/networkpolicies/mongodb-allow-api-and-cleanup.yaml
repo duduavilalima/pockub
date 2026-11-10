@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mongodb-allow-api-and-cleanup
+  namespace: learning-lab
+spec:
+  podSelector:
+    matchLabels:
+      app: mongodb
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: product-api
+        - podSelector:
+            matchLabels:
+              app: log-cleanup
+      ports:
+        - protocol: TCP
+          port: 27017

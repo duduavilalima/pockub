@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-api
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "learning-lab.labels" . | nindent 4 }}
+    app: product-api
+    version: {{ .Values.productApi.image.tag | quote }}
+spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.productApi.replicas }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "learning-lab.selectorLabels" (dict "name" "product-api" "root" .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "learning-lab.selectorLabels" (dict "name" "product-api" "root" .) | nindent 8 }}
+        version: {{ .Values.productApi.image.tag | quote }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z postgresql 5432; do
+                echo "aguardando PostgreSQL..."; sleep 2
+              done
+          resources:
+            requests: {cpu: "10m", memory: "16Mi"}
+            limits: {cpu: "50m", memory: "32Mi"}
+      containers:
+        - name: product-api
+          image: "{{ .Values.productApi.image.repository }}:{{ .Values.productApi.image.tag }}"
+          imagePullPolicy: {{ .Values.productApi.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.productApi.service.targetPort }}
+          envFrom:
+            - configMapRef:
+                name: product-api-config
+            - secretRef:
+                name: product-api-secret
+          resources:
+            {{- toYaml .Values.productApi.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ .Values.productApi.service.targetPort }}
+            failureThreshold: 12
+            periodSeconds: 5    # aguarda até 60s pelo startup da JVM
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ .Values.productApi.service.targetPort }}
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ .Values.productApi.service.targetPort }}
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 3

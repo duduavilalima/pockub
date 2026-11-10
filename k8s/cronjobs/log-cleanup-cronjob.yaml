@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: log-cleanup
+  namespace: learning-lab
+spec:
+  schedule: "0 2 * * *"          # diário às 02:00
+  concurrencyPolicy: Forbid      # não executa nova instância se a anterior ainda rodar
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: log-cleanup      # usado pela NetworkPolicy que libera o acesso ao MongoDB
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: log-cleanup
+              image: mongo:7
+              command:
+                - mongosh
+                - mongodb://mongodb:27017/pockub
+                - --eval
+                - |
+                  const limite = new Date();
+                  limite.setDate(limite.getDate() - 30);
+                  const result = db.access_logs.deleteMany({
+                    timestamp: { $lt: limite }
+                  });
+                  print("Logs removidos:", result.deletedCount);
+              resources:
+                requests: {cpu: "50m", memory: "64Mi"}
+                limits: {cpu: "200m", memory: "256Mi"}

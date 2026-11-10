@@ -1,7 +1,7 @@
 # US-015 — Empacotar a plataforma em Helm Chart
 
 **Requisito:** não funcional — plataforma Kubernetes (ver PRD)
-**Status:** Ready
+**Status:** Done
 **PRD:** [Fase 12 — Helm](../PRD.md#fase-12--helm)
 **TDD:** [TDD-008](../tdd/TDD-008-helm.md)
 
@@ -17,10 +17,10 @@
 
 ## Critérios de Aceite
 
-- [ ] `helm lint` e `helm template` executam sem erros
-- [ ] `helm install` sobe a plataforma completa com um único comando
-- [ ] Valores (imagem, réplicas, recursos) parametrizáveis via `values.yaml` e `--set`
-- [ ] `helm upgrade`, `helm rollback` e `helm uninstall` funcionam; PVCs removidos manualmente
+- [x] `helm lint` e `helm template` executam sem erros
+- [x] `helm install` sobe a plataforma completa com um único comando
+- [x] Valores (imagem, réplicas, recursos) parametrizáveis via `values.yaml` e `--set`
+- [x] `helm upgrade`, `helm rollback` e `helm uninstall` funcionam; PVCs removidos manualmente
 
 
 ---
@@ -34,5 +34,5 @@
 
 ## Definition of Done
 
-- [ ] Todos os critérios de aceite validados e marcados `[x]`
-- [ ] TDD-008 com status `Done`
+- [x] Todos os critérios de aceite validados e marcados `[x]`
+- [x] TDD-008 com status `Done`

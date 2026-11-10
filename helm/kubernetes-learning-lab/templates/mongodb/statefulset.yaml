@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "learning-lab.labels" . | nindent 4 }}
+    app: mongodb
+spec:
+  serviceName: mongodb
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "learning-lab.selectorLabels" (dict "name" "mongodb" "root" .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "learning-lab.selectorLabels" (dict "name" "mongodb" "root" .) | nindent 8 }}
+    spec:
+      containers:
+        - name: mongodb
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          ports:
+            - containerPort: 27017
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --quiet
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5     # mongosh leva >1s para iniciar; o default (1s) causaria falsos negativos
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --quiet
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
+        labels:
+          app.kubernetes.io/instance: {{ .Release.Name }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.mongodb.storage.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.mongodb.storage.size }}

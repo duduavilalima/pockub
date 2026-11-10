@@ -1,6 +1,6 @@
 # TDD-008 — Helm Chart
 
-**Status:** Ready
+**Status:** Done
 **Versão:** 1.0
 **Data:** Junho/2026
 **Referências:** [STACK.md](../STACK.md) · [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [TDD-004](TDD-004-persistencia.md) · [TDD-007](TDD-007-observabilidade.md) · [TDD-009](TDD-009-networkpolicy.md)
@@ -364,6 +364,22 @@ helm install learning-lab helm/kubernetes-learning-lab/ \
 
 ---
 
+## 8.1 Estado da implementação e divergências
+
+Chart implementado em `helm/kubernetes-learning-lab/` (templates + `values.yaml`, `values-dev.yaml`, `values-prod.yaml`) e validado com Helm v4.3.1: `helm lint` e `helm template` (defaults, dev e prod) sem erros; `install`, `upgrade`, `rollback` e `uninstall` executados no cluster.
+
+Divergências em relação ao desenho acima:
+
+- `templates/monitoring/grafana-secret.yaml` foi adicionado (o TDD previa só `grafana-configmap.yaml`), para manter o Secret `grafana-secret` do TDD-007.
+- `deployment.yaml` omite `spec.replicas` quando `hpa.enabled=true`, para o `helm upgrade` não brigar com o HPA.
+- O DaemonSet monta também `/var/lib/docker/containers` (ver [TDD-006](TDD-006-workloads-especiais.md)).
+- Os dashboards do Grafana não entram no chart (são importados via API, ver [TDD-007 §6](TDD-007-observabilidade.md)).
+- Os selectors dos Pods incluem `app.kubernetes.io/instance`; as NetworkPolicies continuam selecionando só por `app:`.
+- Os PVCs que já existiam (criados antes pelos manifests de `k8s/`) **não** ganham o label `app.kubernetes.io/instance`: o StatefulSet reaproveita o PVC pelo nome e não o relabela. O `kubectl delete pvc -l app.kubernetes.io/instance=...` só funciona em instalações novas; para PVCs antigos use os nomes.
+- **Instalar em cluster que já tem os manifests de `k8s/`** falha por conflito de ownership; remova os recursos aplicados com `kubectl` (mantendo os PVCs) antes.
+
+---
+
 ## 9. Riscos e Considerações
 
 | Item | Detalhe |
@@ -387,9 +403,9 @@ helm install learning-lab helm/kubernetes-learning-lab/ \
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] `helm lint` e `helm template` sem erros
-- [ ] `helm install` e `helm uninstall` da plataforma completa executados em cluster limpo
-- [ ] Rollback com `helm rollback` validado
-- [ ] Arquivo `TDD-008-helm_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-015)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] `helm lint` e `helm template` sem erros
+- [x] `helm install` e `helm uninstall` da plataforma completa executados em cluster limpo
+- [x] Rollback com `helm rollback` validado
+- [x] Arquivo `TDD-008-helm_explain.md` gerado
+- [x] Estórias vinculadas atualizadas (US-015)

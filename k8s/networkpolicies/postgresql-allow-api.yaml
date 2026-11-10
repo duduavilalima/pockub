@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgresql-allow-api
+  namespace: learning-lab
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: product-api
+      ports:
+        - protocol: TCP
+          port: 5432

@@ -1,0 +1,10 @@
+# Exemplo de override para "produção"
+productApi:
+  replicas: 3
+  image:
+    pullPolicy: Always
+hpa:
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+seedJob:
+  enabled: false             # não executar seed em produção
