@@ -202,7 +202,7 @@ kubectl scale deployment product-api --replicas=1 -n learning-lab
 | `maxUnavailable: 0` com 1 réplica | Durante o update, o cluster precisa suportar 2 Pods temporariamente — garantir recursos no node |
 | HPA + JVM | A JVM aquece com o tempo (JIT) — métricas de CPU podem ser altas no início e baixar depois; aguardar estabilização antes de avaliar |
 | `stabilizationWindowSeconds` | Default 300s para scale-down — nos estudos pode ser reduzido para `60s` para ver o efeito mais rápido |
-| Rolling Update e requisições perdidas | Observadas 3 falhas em 290 no Cenário 9; a mitigação (`preStop`) é tratada no [TDD-010 §2.1](TDD-010-simulacao-incidentes.md#21-incidente-8--rolling-update-com-perda-de-requisições) |
+| Rolling Update e requisições perdidas | Observadas 3 falhas em 290 no Cenário 9; a mitigação (`preStop`) foi aplicada no Deployment e validada (0 falhas) no [TDD-010 §2.1](TDD-010-simulacao-incidentes.md#21-incidente-8--rolling-update-com-perda-de-requisições) |
 | Requests muito baixos | `requests.cpu: 250m` é adequado para estudo; se a JVM pressionar mais, aumentar para evitar `OOMKilled` |
 
 

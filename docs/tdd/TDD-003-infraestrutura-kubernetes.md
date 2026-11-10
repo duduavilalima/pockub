@@ -124,6 +124,7 @@ spec:
         prometheus.io/path: "/actuator/prometheus"
         prometheus.io/port: "8080"
     spec:
+      terminationGracePeriodSeconds: 30   # + preStop no container: ver TDD-010 §2.1
       initContainers:
         - name: wait-for-postgres
           image: busybox:1.36
