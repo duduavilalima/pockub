@@ -45,7 +45,7 @@ postgresql:
   credentials:
     database: pockub
     username: pockub
-    password: pockub123  # apenas para estudo — usar Secret externo em produção
+    password: ""        # OBRIGATÓRIO — vem de POSTGRES_PASSWORD no .env (ver helm/helm-env.sh)
     # o template secret.yaml gera `postgresql-secret` (POSTGRES_USER/PASSWORD)
     # e `product-api-secret` (DB_USERNAME/DB_PASSWORD) a partir destes valores
 
@@ -104,5 +104,5 @@ monitoring:
     image:
       repository: grafana/grafana
       tag: "12.0.0"
-    adminPassword: admin   # vira o Secret grafana-secret
+    adminPassword: ""     # OBRIGATÓRIO (se monitoring.enabled) — vem de GRAFANA_ADMIN_PASSWORD no .env; vira o Secret grafana-secret
     nodePort: 30300
