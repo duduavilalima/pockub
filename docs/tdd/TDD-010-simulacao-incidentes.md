@@ -1,6 +1,6 @@
 # TDD-010 — Simulação de Incidentes
 
-**Status:** Ready
+**Status:** Done
 **Versão:** 1.0
 **Data:** Novembro/2026
 **Referências:** [TDD-003](TDD-003-infraestrutura-kubernetes.md) · [TDD-005](TDD-005-escalabilidade-confiabilidade.md) · [TDD-007](TDD-007-observabilidade.md) · [TDD-009](TDD-009-networkpolicy.md)
@@ -62,6 +62,21 @@ spec:
 
 O `exec` exige o binário `sleep` na imagem; se ela não o tiver, use a ação nativa `preStop.sleep: {seconds: 5}` (K8s ≥ 1.30). **Validar (depois):** repetir o loop e esperar somente `200`. Divergência no manifest é registrada aqui e refletida no TDD-003/TDD-005.
 
+### 2.2 Registro da execução (10/11/2026)
+
+| # | Resultado observado | Divergência do esperado |
+|---|---------------------|-------------------------|
+| 1 | Pod novo `0/1 Running` em 3 s e `Ready` em ~35 s; eventos `Unhealthy` do startup probe durante o boot da JVM | Estado era `Running 0/1` (não `ContainerCreating`): a imagem já estava no node |
+| 2 | Pod novo `Error` → `CrashLoopBackOff`; `logs --previous`: `Unable to access jarfile`; `/produtos` seguiu `200` pelo Pod antigo; `rollout undo` restaurou `1.0.0` | A tag `1.0.0-broken` não existe: foi construída no daemon do Minikube com `FROM product-api:1.0.0` + `ENTRYPOINT` inválido (sem isso o resultado seria `ImagePullBackOff`) |
+| 3 | CPU 105%–155% dos `requests`; HPA foi de 1 para 3 e depois 5 réplicas em ~3 min | Scale-down leva ≥5 min (janela de estabilização) após remover o `load-generator` |
+| 4 | `DB_URL` inválido: Pod novo em `CrashLoopBackOff` (`Unable to obtain connection` no `flywayInitializer`); Pods antigos seguiram `Running` | Corrigido reaplicando `k8s/configmaps/` e `rollout restart` |
+| 5 | Com `postgresql` em 0 réplicas, `/produtos` deu timeout (`000`); após `scale --replicas=1` os dados voltaram (PVC `Bound`) | **Readiness da API não falhou** (Pods seguiram `1/1` e no `Endpoints`): o `/actuator/health/readiness` não inclui o banco. Sintoma real: erro/timeout no endpoint, não Pod fora do Service |
+| 6 | `nc -zv -w 3 postgresql 5432` do Pod `np-test` (sem label) → `Connection timed out`; `describe networkpolicy` mostra `From: app=product-api` | — |
+| 7 | `OOMKilled` (exit code 137) com `limits.memory: 128Mi`, reinícios crescentes | `kubectl set resources` precisa reduzir também `requests.memory` (256Mi > limit é rejeitado pela API). Estado base restaurado com `kubectl apply -f k8s/deployments/product-api.yaml` |
+| 8 | **Antes:** 3 falhas em 167 requisições (1×`000`, 2×`502`) em 1.0.0→1.1.0. **Depois:** 0 falhas em 210 (1.1.0→1.0.0) | O `preStop` só vale para Pods que **já o têm**: o 1º rollout instala o `preStop`; o teste é feito no 2º |
+
+**Mudanças nos artefatos (incidente 8):** `terminationGracePeriodSeconds: 30` e `lifecycle.preStop` (`sleep 5`) adicionados em `k8s/deployments/product-api.yaml` e `helm/kubernetes-learning-lab/templates/deployment.yaml`. O binário `sleep` existe na imagem (`/bin/sleep`), então vale a variante `exec`.
+
 ---
 
 ## 3. Kit de troubleshooting
@@ -100,8 +115,8 @@ Fluxo sugerido: `get pods` (estado) → `describe` (eventos e motivo) → `logs`
 
 ## Definition of Done
 
-- [ ] Artefatos implementados conforme este documento (divergências registradas aqui)
-- [ ] Incidentes 1 a 8 executados, com sintoma, diagnóstico e correção registrados
-- [ ] Estado base restaurado após cada incidente
-- [ ] Arquivo `TDD-010-simulacao-incidentes_explain.md` gerado
-- [ ] Estórias vinculadas atualizadas (US-017)
+- [x] Artefatos implementados conforme este documento (divergências registradas aqui)
+- [x] Incidentes 1 a 8 executados, com sintoma, diagnóstico e correção registrados
+- [x] Estado base restaurado após cada incidente
+- [x] Arquivo `TDD-010-simulacao-incidentes_explain.md` gerado
+- [x] Estórias vinculadas atualizadas (US-017)

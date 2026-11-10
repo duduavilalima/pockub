@@ -13,7 +13,7 @@
 | [TDD-007](TDD-007-observabilidade.md)               | Observabilidade                 | Actuator, Prometheus, Grafana, Metrics Server | [US-014](../stories/US-014-observabilidade.md) | Done |
 | [TDD-008](TDD-008-helm.md)                          | Helm Chart                      | Chart structure, values.yaml, templates, ciclo de release | [US-015](../stories/US-015-helm-chart.md) | Done |
 | [TDD-009](TDD-009-networkpolicy.md) | NetworkPolicy | Isolamento de PostgreSQL e MongoDB, CNI Calico | [US-016](../stories/US-016-networkpolicy.md) | Done |
-| [TDD-010](TDD-010-simulacao-incidentes.md) | Simulação de Incidentes | Runbook de falhas, rollback, troubleshooting | [US-017](../stories/US-017-simulacao-incidentes.md) | Ready |
+| [TDD-010](TDD-010-simulacao-incidentes.md) | Simulação de Incidentes | Runbook de falhas, rollback, troubleshooting | [US-017](../stories/US-017-simulacao-incidentes.md) | Done |
 
 ---
 
